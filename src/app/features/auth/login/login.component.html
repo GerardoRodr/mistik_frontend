@@ -1,0 +1,164 @@
+<div class="min-h-screen w-full flex items-center justify-center bg-[#0B1C30] px-4 py-8 relative overflow-hidden font-sans select-none">
+  <!-- Luces ambientales de fondo corporativo -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-[#E11D48]/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- Contenedor central del portal -->
+  <div class="w-full max-w-[420px] bg-white rounded-lg shadow-xl border border-slate-200/90 p-8 z-10">
+    <!-- Logotipo y membrete empresarial -->
+    <div class="text-center mb-6">
+      <div class="inline-flex h-12 w-12 rounded-[6px] bg-[#E11D48] items-center justify-center text-white font-black text-xl shadow-sm mb-3">
+        M
+      </div>
+      <div class="flex items-center justify-center gap-1.5 font-extrabold text-xl tracking-tight text-slate-900">
+        <span>MISTIK</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#E11D48]"></span>
+        <span class="font-normal text-slate-500 text-base">ERP</span>
+      </div>
+      <p class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase mt-0.5">
+        Mistik Tours & Travel S.A.C.
+      </p>
+      <div class="mt-2 inline-flex items-center px-2 py-0.5 rounded-[4px] text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+        Portal de Operaciones & Despacho
+      </div>
+    </div>
+
+    <!-- Alerta de excepcion en autenticacion -->
+    @if (errorMessage()) {
+      <div class="mb-5 p-3 rounded-[6px] bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5 animate-fadeIn">
+        <svg class="w-4 h-4 min-w-4 text-rose-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="font-medium leading-relaxed">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Formulario de credenciales de operador -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      <!-- Correo corporativo -->
+      <div>
+        <label for="email" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+          Correo Corporativo
+        </label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+            </svg>
+          </span>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="operador@mistiktours.com"
+            class="w-full pl-9 pr-3 h-[38px] text-xs rounded-[6px] border border-slate-300 focus:outline-none focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48] transition bg-white text-slate-900"
+            [class.border-rose-400]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
+          />
+        </div>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.hasError('required')) {
+          <p class="text-[11px] text-rose-600 mt-1">El correo corporativo es obligatorio.</p>
+        } @else if (loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')) {
+          <p class="text-[11px] text-rose-600 mt-1">Formato de correo no valido.</p>
+        }
+      </div>
+
+      <!-- Contrasena de operador -->
+      <div>
+        <label for="password" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+          Contrasena
+        </label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </span>
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Ingrese su contrasena"
+            class="w-full pl-9 pr-9 h-[38px] text-xs rounded-[6px] border border-slate-300 focus:outline-none focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48] transition bg-white text-slate-900"
+            [class.border-rose-400]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+          />
+          <button
+            type="button"
+            (click)="toggleShowPassword()"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+            title="Mostrar contrasena"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+        </div>
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
+          <p class="text-[11px] text-rose-600 mt-1">La contrasena es requerida (minimo 6 caracteres).</p>
+        }
+      </div>
+
+      <!-- Accion primaria con color Crimson DESIGN.md -->
+      <button
+        type="submit"
+        [disabled]="isLoading()"
+        class="w-full mt-2 h-10 rounded-[6px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold text-xs tracking-wide transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+      >
+        @if (isLoading()) {
+          <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Validando credenciales...</span>
+        } @else {
+          <span>Ingresar a la Plataforma</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        }
+      </button>
+    </form>
+
+    <!-- Panel discreto de depuracion de desarrollo -->
+    <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+      <button
+        type="button"
+        (click)="toggleDevDrawer()"
+        class="text-[11px] text-slate-400 hover:text-slate-600 font-medium transition cursor-pointer"
+      >
+        {{ showDevDrawer() ? 'Ocultar accesos rapidos' : 'Accesos rapidos de desarrollo' }}
+      </button>
+
+      @if (showDevDrawer()) {
+        <div class="mt-2 p-2 rounded-[6px] bg-slate-50 border border-slate-200 grid grid-cols-3 gap-1.5 animate-fadeIn">
+          <button
+            type="button"
+            (click)="fillDevCredentials('ADMIN')"
+            class="px-2 py-1 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 text-[11px] font-medium text-slate-700 transition"
+          >
+            Admin
+          </button>
+          <button
+            type="button"
+            (click)="fillDevCredentials('SUPERVISOR')"
+            class="px-2 py-1 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 text-[11px] font-medium text-slate-700 transition"
+          >
+            Supervisor
+          </button>
+          <button
+            type="button"
+            (click)="fillDevCredentials('AGENT')"
+            class="px-2 py-1 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 text-[11px] font-medium text-slate-700 transition"
+          >
+            Asesor
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Pie de pagina institucional -->
+    <div class="mt-4 text-center text-[10px] text-slate-400">
+      Mistik Tours & Travel S.A.C. &bull; RUC 20608945121
+    </div>
+  </div>
+</div>
