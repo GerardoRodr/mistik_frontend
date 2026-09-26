@@ -2,11 +2,15 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
+interface NavGroup {
+  name: string;
+  items: NavItem[];
+}
+
 interface NavItem {
   label: string;
   path: string;
   icon: string;
-  roles?: string[];
   badge?: string;
   disabled?: boolean;
 }
@@ -21,43 +25,64 @@ export class SidebarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly isCollapsed = signal(false);
 
-  // Elementos de navegacion del sistema
-  protected readonly navItems: NavItem[] = [
+  // Grupos y modulos del ERP de turismo
+  protected readonly navGroups: NavGroup[] = [
     {
-      label: 'Panel Principal',
-      path: '/dashboard',
-      icon: 'dashboard'
+      name: 'Operaciones',
+      items: [
+        {
+          label: 'Panel Principal',
+          path: '/dashboard',
+          icon: 'dashboard'
+        },
+        {
+          label: 'Directorio Clientes',
+          path: '/crm',
+          icon: 'users'
+        }
+      ]
     },
     {
-      label: 'Clientes CRM',
-      path: '/crm',
-      icon: 'users',
-      roles: ['ADMIN', 'SUPERVISOR', 'AGENT', 'ASESOR']
+      name: 'Gestion Turistica',
+      items: [
+        {
+          label: 'Reservas & Vuelos',
+          path: '/reservas',
+          icon: 'plane',
+          badge: 'Proximo',
+          disabled: true
+        },
+        {
+          label: 'Tramites de Visas',
+          path: '/visas',
+          icon: 'passport',
+          badge: 'Proximo',
+          disabled: true
+        },
+        {
+          label: 'Flujo Operativo Kanban',
+          path: '/kanban',
+          icon: 'kanban',
+          badge: 'Proximo',
+          disabled: true
+        }
+      ]
     },
     {
-      label: 'Reservas Aereas',
-      path: '/reservas',
-      icon: 'ticket',
-      badge: 'Hito 2',
-      disabled: true
-    },
-    {
-      label: 'Tramites Consulares',
-      path: '/visas',
-      icon: 'passport',
-      badge: 'Hito 2',
-      disabled: true
-    },
-    {
-      label: 'Tablero Kanban',
-      path: '/kanban',
-      icon: 'kanban',
-      badge: 'Hito 3',
-      disabled: true
+      name: 'Finanzas',
+      items: [
+        {
+          label: 'Facturacion & Cobros',
+          path: '/facturacion',
+          icon: 'receipt',
+          badge: 'Proximo',
+          disabled: true
+        }
+      ]
     }
   ];
 
-  // Alternar colapso de la barra lateral en pantallas grandes
+  // Alternar ancho del panel de navegacion
   toggleCollapse(): void {
     this.isCollapsed.update((val) => !val);
   }

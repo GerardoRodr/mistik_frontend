@@ -1,14 +1,14 @@
-<div class="h-screen w-screen flex overflow-hidden bg-slate-100 font-sans antialiased text-slate-800">
-  <!-- Barra lateral de navegacion -->
+<div class="h-screen w-screen flex overflow-hidden bg-[#F8FAFC] font-sans antialiased text-[#0B1C30]">
+  <!-- Barra lateral ejecutiva -->
   <app-sidebar />
 
-  <!-- Contenedor central con encabezado y vista activa -->
+  <!-- Area de trabajo con encabezado y canvas dinamico -->
   <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
     <app-header />
 
-    <!-- Zona de contenido inyectado por el enrutador -->
-    <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50">
-      <div class="max-w-7xl mx-auto">
+    <!-- Canvas de modulos ERP -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-[#F8FAFC]">
+      <div class="max-w-7xl mx-auto space-y-6">
         <router-outlet />
       </div>
     </main>

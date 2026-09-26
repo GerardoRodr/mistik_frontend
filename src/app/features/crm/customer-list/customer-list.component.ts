@@ -16,7 +16,7 @@ export class CustomerListComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly fb = inject(FormBuilder);
 
-  // Senales reactivas de estado
+  // Senales reactivas de estado para Data Grid ERP
   protected readonly customers = signal<Customer[]>([]);
   protected readonly isLoading = signal(false);
   protected readonly isCreating = signal(false);
@@ -24,7 +24,7 @@ export class CustomerListComponent implements OnInit {
   protected readonly createError = signal<string | null>(null);
   protected readonly showCreateModal = signal(false);
 
-  // Metadatos de paginacion reactiva
+  // Metadatos de paginacion de alta densidad
   protected readonly meta = signal<PaginationMeta>({
     page: 1,
     limit: 10,
@@ -32,11 +32,11 @@ export class CustomerListComponent implements OnInit {
     totalPages: 1
   });
 
-  // Termino de busqueda
+  // Parametro de busqueda reactiva
   protected readonly searchInput = signal('');
   private readonly searchSubject = new Subject<string>();
 
-  // Formulario reactivo para creacion de clientes
+  // Formulario reactivo para alta de clientes
   protected readonly createForm = this.fb.group({
     documentType: ['DNI', [Validators.required]],
     documentNumber: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(15)]],
@@ -48,7 +48,7 @@ export class CustomerListComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // Configurar busqueda con debounce para garantizar respuesta menor a 5 segundos
+    // Busqueda reactiva con debounce de 350ms
     this.searchSubject
       .pipe(
         debounceTime(350),
@@ -62,7 +62,7 @@ export class CustomerListComponent implements OnInit {
     this.loadCustomers();
   }
 
-  // Cargar clientes desde la API de NestJS
+  // Cargar datos desde el backend
   loadCustomers(searchQuery?: string): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
@@ -84,15 +84,15 @@ export class CustomerListComponent implements OnInit {
         error: (err: HttpErrorResponse) => {
           this.isLoading.set(false);
           if (err.status === 0) {
-            this.errorMessage.set('No se puede conectar con el backend (http://localhost:3000). Verifique su servidor.');
+            this.errorMessage.set('Sin conexion con el servidor central de la agencia.');
           } else {
-            this.errorMessage.set(err.error?.message || 'Error al obtener el listado de clientes.');
+            this.errorMessage.set(err.error?.message || 'Error al recuperar registros de clientes.');
           }
         }
       });
   }
 
-  // Manejar cambio en la caja de busqueda
+  // Capturar cambios en la caja de busqueda
   onSearchChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchInput.set(input.value);
@@ -105,7 +105,7 @@ export class CustomerListComponent implements OnInit {
     this.searchSubject.next('');
   }
 
-  // Cambiar de pagina
+  // Navegar entre paginas
   goToPage(newPage: number): void {
     if (newPage < 1 || newPage > this.meta().totalPages || newPage === this.meta().page) {
       return;
@@ -114,7 +114,7 @@ export class CustomerListComponent implements OnInit {
     this.loadCustomers();
   }
 
-  // Cambiar cantidad de registros por pagina
+  // Modificar limite de registros por pagina
   onLimitChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     const limit = parseInt(select.value, 10);
@@ -135,7 +135,7 @@ export class CustomerListComponent implements OnInit {
     this.createError.set(null);
   }
 
-  // Registrar cliente en el backend
+  // Enviar formulario al backend
   submitCreateCustomer(): void {
     if (this.createForm.invalid || this.isCreating()) {
       this.createForm.markAllAsTouched();
@@ -166,14 +166,14 @@ export class CustomerListComponent implements OnInit {
         error: (err: HttpErrorResponse) => {
           this.isCreating.set(false);
           if (err.status === 409) {
-            this.createError.set(`Conflicto: Ya existe un cliente con el documento ${val.documentType} ${val.documentNumber}.`);
+            this.createError.set(`Ya existe un cliente registrado con el documento ${val.documentType} ${val.documentNumber}.`);
           } else if (err.error?.message) {
             const msg = Array.isArray(err.error.message)
               ? err.error.message.join(', ')
               : err.error.message;
             this.createError.set(msg);
           } else {
-            this.createError.set('Error inesperado al intentar registrar al cliente.');
+            this.createError.set('No se pudo completar el registro del cliente.');
           }
         }
       });

@@ -10,11 +10,11 @@ import { AuthService } from '../../../core/services/auth.service';
 export class HeaderComponent {
   protected readonly authService = inject(AuthService);
 
-  // Iniciales del usuario para el avatar
+  // Iniciales del operador para el avatar
   protected readonly userInitials = computed(() => {
     const user = this.authService.currentUser();
     if (!user?.name) {
-      return 'U';
+      return 'OP';
     }
     const parts = user.name.trim().split(' ');
     if (parts.length >= 2) {
@@ -23,25 +23,41 @@ export class HeaderComponent {
     return user.name.slice(0, 2).toUpperCase();
   });
 
-  // Estilo de badge segun rol
+  // Etiqueta formal del rol para visualizacion de ERP
+  protected readonly roleDisplay = computed(() => {
+    const role = this.authService.userRole();
+    switch (role) {
+      case 'ADMIN':
+        return 'Administrador';
+      case 'SUPERVISOR':
+        return 'Supervisor Operativo';
+      case 'AGENT':
+      case 'ASESOR':
+        return 'Asesor Comercial';
+      default:
+        return 'Operador';
+    }
+  });
+
+  // Estilo de insignia segun rol
   protected readonly roleBadgeClass = computed(() => {
     const role = this.authService.userRole();
     switch (role) {
       case 'ADMIN':
-        return 'bg-purple-100 text-purple-700 border-purple-300';
+        return 'bg-slate-100 text-slate-700 border-slate-300';
       case 'SUPERVISOR':
-        return 'bg-emerald-100 text-emerald-700 border-emerald-300';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'AGENT':
       case 'ASESOR':
-        return 'bg-amber-100 text-amber-700 border-amber-300';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-300';
+        return 'bg-slate-50 text-slate-600 border-slate-200';
     }
   });
 
-  // Ejecutar cierre de sesion
+  // Cerrar sesion de la estacion
   logout(): void {
-    if (confirm('Deseas cerrar la sesion actual?')) {
+    if (confirm('Desea cerrar la sesion de la estacion actual?')) {
       this.authService.logout();
     }
   }

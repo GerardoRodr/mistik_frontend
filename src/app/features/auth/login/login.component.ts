@@ -16,12 +16,13 @@ export class LoginComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  // Senales reactivas para el estado de la vista
+  // Senales reactivas de estado
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly showPassword = signal(false);
+  protected readonly showDevDrawer = signal(false);
 
-  // Formulario reactivo de credenciales
+  // Formulario reactivo de inicio de sesion
   protected readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
@@ -32,8 +33,13 @@ export class LoginComponent {
     this.showPassword.update((val) => !val);
   }
 
-  // Rellenar credenciales de prueba preconfiguradas
-  fillSeedCredentials(role: 'ADMIN' | 'SUPERVISOR' | 'AGENT'): void {
+  // Alternar panel desplegable de acceso rapido de desarrollo
+  toggleDevDrawer(): void {
+    this.showDevDrawer.update((val) => !val);
+  }
+
+  // Rellenar credenciales de depuracion
+  fillDevCredentials(role: 'ADMIN' | 'SUPERVISOR' | 'AGENT'): void {
     const creds = {
       ADMIN: { email: 'admin@mistiktours.com', pass: 'Admin2026!' },
       SUPERVISOR: { email: 'supervisor@mistiktours.com', pass: 'Supervisor2026!' },
@@ -47,7 +53,7 @@ export class LoginComponent {
     this.errorMessage.set(null);
   }
 
-  // Enviar formulario y procesar autenticacion
+  // Enviar credenciales al backend de NestJS
   onSubmit(): void {
     if (this.loginForm.invalid || this.isLoading()) {
       this.loginForm.markAllAsTouched();
@@ -68,14 +74,14 @@ export class LoginComponent {
       error: (err: HttpErrorResponse) => {
         this.isLoading.set(false);
         if (err.status === 401) {
-          this.errorMessage.set('Credenciales invalidas. Verifique su correo y contrasena.');
+          this.errorMessage.set('Credenciales invalidas. Verifique correo institucional y contrasena.');
         } else if (err.error?.message) {
           const msg = Array.isArray(err.error.message)
             ? err.error.message.join(', ')
             : err.error.message;
           this.errorMessage.set(msg);
         } else {
-          this.errorMessage.set('No se pudo conectar con el servidor backend. Verifique que este activo en el puerto 3000.');
+          this.errorMessage.set('No se pudo establecer conexion con el servidor. Verifique su conexion.');
         }
       }
     });
