@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import {
   CreateCustomerDto,
   Customer,
+  CustomerDetail,
   CustomerQueryParams,
   PaginatedCustomersResponse,
   UpdateCustomerDto
@@ -35,8 +36,8 @@ export class CustomerService {
   }
 
   // Obtener expediente de un cliente por su identificador UUID
-  getCustomerById(id: string): Observable<Customer> {
-    return this.http.get<Customer>(`${this.baseUrl}/${id}`);
+  getCustomerById(id: string): Observable<CustomerDetail> {
+    return this.http.get<CustomerDetail>(`${this.baseUrl}/${id}`);
   }
 
   // Registrar un nuevo cliente en el CRM

@@ -1,0 +1,583 @@
+<div class="space-y-4">
+  <!-- Notificacion flotante de actualizacion exitosa -->
+  @if (updateSuccessMessage()) {
+    <div class="p-3 rounded-[6px] bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between gap-2 shadow-xs animate-fadeIn">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-emerald-600 min-w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="font-semibold">{{ updateSuccessMessage() }}</span>
+      </div>
+      <button (click)="updateSuccessMessage.set(null)" class="text-emerald-700 hover:text-emerald-950">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  }
+
+  <!-- Barra de navegacion superior y retorno -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200">
+    <div class="flex items-center gap-3">
+      <button
+        (click)="goBack()"
+        class="h-8 px-2.5 rounded-[6px] border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+        title="Volver al Directorio de Clientes"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Directorio</span>
+      </button>
+
+      <span class="text-slate-300">/</span>
+
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+        Expediente 360° del Pasajero
+      </span>
+    </div>
+
+    @if (customer() && !isLoading()) {
+      <button
+        (click)="openEditModal()"
+        class="inline-flex items-center gap-1.5 h-8 px-3 rounded-[6px] bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition cursor-pointer self-start sm:self-auto"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        <span>Editar Expediente</span>
+      </button>
+    }
+  </div>
+
+  <!-- Estado de carga -->
+  @if (isLoading()) {
+    <div class="bg-white rounded-lg border border-slate-200 p-12 text-center text-slate-400 shadow-2xs">
+      <div class="flex flex-col items-center justify-center gap-3">
+        <svg class="w-8 h-8 animate-spin text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span class="text-xs font-semibold text-slate-600">Recuperando expediente 360 grados del cliente...</span>
+      </div>
+    </div>
+  }
+
+  <!-- Error al cargar expediente -->
+  @if (errorMessage()) {
+    <div class="p-6 rounded-lg bg-white border border-rose-200 text-center shadow-2xs space-y-3">
+      <div class="w-10 h-10 mx-auto rounded-full bg-rose-50 text-rose-600 flex items-center justify-center">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h2 class="text-sm font-bold text-slate-900">{{ errorMessage() }}</h2>
+      <button
+        (click)="goBack()"
+        class="h-8 px-4 rounded-[6px] bg-[#E11D48] text-white text-xs font-semibold hover:bg-[#BE123C] transition cursor-pointer"
+      >
+        Regresar al Directorio
+      </button>
+    </div>
+  }
+
+  <!-- Contenido principal del expediente 360 grados -->
+  @if (customer() && !isLoading()) {
+    @let c = customer()!;
+
+    <!-- Tarjeta Principal del Titular (Hero Card 360) -->
+    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-2xs">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <!-- Avatar y datos de identificacion -->
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-[#E11D48] text-white flex items-center justify-center text-lg font-extrabold tracking-wider shadow-xs">
+            {{ getInitials() }}
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="text-lg font-bold text-slate-900 tracking-tight">
+                {{ c.firstName }} {{ c.lastName }}
+              </h1>
+              <span class="inline-flex items-center h-5 px-2 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                {{ c.documentType }}
+              </span>
+              <span class="font-mono text-xs font-bold text-slate-800 tabular-nums">
+                {{ c.documentNumber }}
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-slate-500">
+              <span class="font-mono text-[11px] text-slate-400">UUID: {{ c.id }}</span>
+              <span>•</span>
+              <span>Alta: {{ c.createdAt | date: 'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones directas de contacto -->
+        <div class="flex items-center gap-2 self-stretch md:self-auto justify-end">
+          @if (c.phoneNumber) {
+            <a
+              [href]="'tel:' + c.phoneNumber"
+              class="h-8 px-3 rounded-[6px] border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
+              title="Llamar al cliente"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <span>{{ c.phoneNumber }}</span>
+            </a>
+          }
+          @if (c.email) {
+            <a
+              [href]="'mailto:' + c.email"
+              class="h-8 px-3 rounded-[6px] border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
+              title="Enviar correo electronico"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>{{ c.email }}</span>
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Metricas KPI de Resumen Rapido (4 Tarjetas Compactas) -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <!-- KPI Reservas -->
+      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Reservas Aéreas</span>
+          <span class="p-1 rounded-[4px] bg-sky-50 text-sky-600">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900 mt-1 font-mono tabular-nums">
+          {{ c.bookings?.length || 0 }}
+        </div>
+        <span class="text-[10px] text-slate-400">Emisiones PNR</span>
+      </div>
+
+      <!-- KPI Visas -->
+      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Trámites Visa</span>
+          <span class="p-1 rounded-[4px] bg-purple-50 text-purple-600">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900 mt-1 font-mono tabular-nums">
+          {{ c.visaProcesses?.length || 0 }}
+        </div>
+        <span class="text-[10px] text-slate-400">Procesos DS-160</span>
+      </div>
+
+      <!-- KPI Pagos -->
+      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Abonos / Pagos</span>
+          <span class="p-1 rounded-[4px] bg-emerald-50 text-emerald-600">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900 mt-1 font-mono tabular-nums">
+          {{ c.payments?.length || 0 }}
+        </div>
+        <span class="text-[10px] text-slate-400">Comprobantes</span>
+      </div>
+
+      <!-- KPI Tareas -->
+      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tareas Activas</span>
+          <span class="p-1 rounded-[4px] bg-amber-50 text-amber-600">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </span>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900 mt-1 font-mono tabular-nums">
+          {{ c.serviceTasks?.length || 0 }}
+        </div>
+        <span class="text-[10px] text-slate-400">Seguimiento</span>
+      </div>
+    </div>
+
+    <!-- Navegacion por pestañas (Tabs 360) -->
+    <div class="bg-white rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
+      <!-- Barra de pestañas -->
+      <div class="flex border-b border-slate-200 bg-[#F8FAFC] overflow-x-auto select-none text-xs">
+        <button
+          (click)="setTab('overview')"
+          class="h-10 px-4 font-semibold border-b-2 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
+          [class.border-[#E11D48]]="activeTab() === 'overview'"
+          [class.text-[#E11D48]]="activeTab() === 'overview'"
+          [class.bg-white]="activeTab() === 'overview'"
+          [class.border-transparent]="activeTab() !== 'overview'"
+          [class.text-slate-600]="activeTab() !== 'overview'"
+          [class.hover:text-slate-900]="activeTab() !== 'overview'"
+        >
+          <span>Resumen General</span>
+        </button>
+
+        <button
+          (click)="setTab('bookings')"
+          class="h-10 px-4 font-semibold border-b-2 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
+          [class.border-[#E11D48]]="activeTab() === 'bookings'"
+          [class.text-[#E11D48]]="activeTab() === 'bookings'"
+          [class.bg-white]="activeTab() === 'bookings'"
+          [class.border-transparent]="activeTab() !== 'bookings'"
+          [class.text-slate-600]="activeTab() !== 'bookings'"
+          [class.hover:text-slate-900]="activeTab() !== 'bookings'"
+        >
+          <span>Reservas Aéreas</span>
+          <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-mono">
+            {{ c.bookings?.length || 0 }}
+          </span>
+        </button>
+
+        <button
+          (click)="setTab('visas')"
+          class="h-10 px-4 font-semibold border-b-2 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
+          [class.border-[#E11D48]]="activeTab() === 'visas'"
+          [class.text-[#E11D48]]="activeTab() === 'visas'"
+          [class.bg-white]="activeTab() === 'visas'"
+          [class.border-transparent]="activeTab() !== 'visas'"
+          [class.text-slate-600]="activeTab() !== 'visas'"
+          [class.hover:text-slate-900]="activeTab() !== 'visas'"
+        >
+          <span>Trámites de Visas</span>
+          <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-mono">
+            {{ c.visaProcesses?.length || 0 }}
+          </span>
+        </button>
+
+        <button
+          (click)="setTab('passengers')"
+          class="h-10 px-4 font-semibold border-b-2 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
+          [class.border-[#E11D48]]="activeTab() === 'passengers'"
+          [class.text-[#E11D48]]="activeTab() === 'passengers'"
+          [class.bg-white]="activeTab() === 'passengers'"
+          [class.border-transparent]="activeTab() !== 'passengers'"
+          [class.text-slate-600]="activeTab() !== 'passengers'"
+          [class.hover:text-slate-900]="activeTab() !== 'passengers'"
+        >
+          <span>Pasajeros Frecuentes</span>
+          <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-mono">
+            {{ c.passengers?.length || 0 }}
+          </span>
+        </button>
+
+        <button
+          (click)="setTab('payments')"
+          class="h-10 px-4 font-semibold border-b-2 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
+          [class.border-[#E11D48]]="activeTab() === 'payments'"
+          [class.text-[#E11D48]]="activeTab() === 'payments'"
+          [class.bg-white]="activeTab() === 'payments'"
+          [class.border-transparent]="activeTab() !== 'payments'"
+          [class.text-slate-600]="activeTab() !== 'payments'"
+          [class.hover:text-slate-900]="activeTab() !== 'payments'"
+        >
+          <span>Historial de Pagos</span>
+          <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-mono">
+            {{ c.payments?.length || 0 }}
+          </span>
+        </button>
+
+        <button
+          (click)="setTab('tasks')"
+          class="h-10 px-4 font-semibold border-b-2 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
+          [class.border-[#E11D48]]="activeTab() === 'tasks'"
+          [class.text-[#E11D48]]="activeTab() === 'tasks'"
+          [class.bg-white]="activeTab() === 'tasks'"
+          [class.border-transparent]="activeTab() !== 'tasks'"
+          [class.text-slate-600]="activeTab() !== 'tasks'"
+          [class.hover:text-slate-900]="activeTab() !== 'tasks'"
+        >
+          <span>Tareas Operativas</span>
+          <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-mono">
+            {{ c.serviceTasks?.length || 0 }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Contenido dinamico segun la pestaña activa -->
+      <div class="p-5 text-xs">
+        <!-- PESTAÑA: Resumen General -->
+        @if (activeTab() === 'overview') {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Ficha demografica -->
+            <div class="space-y-3">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-1.5">
+                Datos Demográficos y Fiscales
+              </h3>
+              <dl class="space-y-2">
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Nombres Completos:</dt>
+                  <dd class="font-semibold text-slate-900">{{ c.firstName }} {{ c.lastName }}</dd>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Documento:</dt>
+                  <dd class="font-mono font-semibold text-slate-900">{{ c.documentType }} {{ c.documentNumber }}</dd>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Teléfono / WhatsApp:</dt>
+                  <dd class="font-mono text-slate-800">{{ c.phoneNumber || 'No registrado' }}</dd>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Correo Electrónico:</dt>
+                  <dd class="text-slate-800">{{ c.email || 'No registrado' }}</dd>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Dirección Fiscal / Domicilio:</dt>
+                  <dd class="text-slate-800 text-right max-w-xs">{{ c.address || 'No registrada' }}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <!-- Auditoria y Trazabilidad -->
+            <div class="space-y-3">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-1.5">
+                Trazabilidad del Expediente (Ley N.° 29733)
+              </h3>
+              <dl class="space-y-2">
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Fecha de Creación:</dt>
+                  <dd class="font-mono text-slate-800">{{ c.createdAt | date: 'yyyy-MM-dd HH:mm:ss' }}</dd>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Última Modificación:</dt>
+                  <dd class="font-mono text-slate-800">{{ c.updatedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</dd>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-50">
+                  <dt class="text-slate-500 font-medium">Estado del Titular:</dt>
+                  <dd>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      ACTIVO
+                    </span>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        }
+
+        <!-- PESTAÑA: Reservas Aereas -->
+        @if (activeTab() === 'bookings') {
+          @if (c.bookings && c.bookings.length > 0) {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="h-8 bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th class="py-2 px-3">Código PNR</th>
+                    <th class="py-2 px-3">Servicio</th>
+                    <th class="py-2 px-3">Estado</th>
+                    <th class="py-2 px-3">Fecha Viaje</th>
+                    <th class="py-2 px-3">Monto</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (booking of c.bookings; track booking.id) {
+                    <tr class="h-9 hover:bg-slate-50">
+                      <td class="py-2 px-3 font-mono font-bold text-slate-900">{{ booking.code }}</td>
+                      <td class="py-2 px-3">{{ booking.serviceType }}</td>
+                      <td class="py-2 px-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800">
+                          {{ booking.status }}
+                        </span>
+                      </td>
+                      <td class="py-2 px-3 font-mono">{{ booking.travelDate || '-' }}</td>
+                      <td class="py-2 px-3 font-mono font-semibold">{{ booking.currency }} {{ booking.totalAmount }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="py-10 text-center text-slate-400 space-y-2">
+              <svg class="w-10 h-10 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              <p class="text-xs font-semibold text-slate-600">No hay reservas aéreas emitidas para este cliente.</p>
+              <p class="text-[11px] text-slate-400">Las reservas registradas en la Semana 8 aparecerán automáticamente aquí.</p>
+            </div>
+          }
+        }
+
+        <!-- PESTAÑA: Tramites de Visas -->
+        @if (activeTab() === 'visas') {
+          @if (c.visaProcesses && c.visaProcesses.length > 0) {
+            <div class="space-y-3">
+              @for (visa of c.visaProcesses; track visa.id) {
+                <div class="p-3 rounded-lg border border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                  <div>
+                    <span class="font-bold text-slate-900">{{ visa.country }} - {{ visa.visaType }}</span>
+                    <p class="text-[11px] text-slate-500">Cita: {{ visa.appointmentDate || 'Por programar' }}</p>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-800">
+                    {{ visa.status }}
+                  </span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="py-10 text-center text-slate-400 space-y-2">
+              <svg class="w-10 h-10 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p class="text-xs font-semibold text-slate-600">No hay procesos de visa activos.</p>
+              <p class="text-[11px] text-slate-400">Los trámites DS-160 programados en la Semana 9 se sincronizarán en este panel.</p>
+            </div>
+          }
+        }
+
+        <!-- PESTAÑA: Pasajeros Frecuentes -->
+        @if (activeTab() === 'passengers') {
+          @if (c.passengers && c.passengers.length > 0) {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="h-8 bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th class="py-2 px-3">Documento</th>
+                    <th class="py-2 px-3">Pasajero</th>
+                    <th class="py-2 px-3">Nacionalidad</th>
+                    <th class="py-2 px-3">Fecha Nacimiento</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (p of c.passengers; track p.id) {
+                    <tr class="h-9 hover:bg-slate-50">
+                      <td class="py-2 px-3 font-mono">{{ p.documentType }} {{ p.documentNumber }}</td>
+                      <td class="py-2 px-3 font-semibold">{{ p.firstName }} {{ p.lastName }}</td>
+                      <td class="py-2 px-3">{{ p.nationality || '-' }}</td>
+                      <td class="py-2 px-3 font-mono">{{ p.birthDate || '-' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="py-10 text-center text-slate-400 space-y-2">
+              <svg class="w-10 h-10 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <p class="text-xs font-semibold text-slate-600">No hay pasajeros vinculados a este titular.</p>
+              <p class="text-[11px] text-slate-400">Los acompañantes de reservas se asociarán automáticamente al emitir boletos.</p>
+            </div>
+          }
+        }
+
+        <!-- PESTAÑA: Historial de Pagos -->
+        @if (activeTab() === 'payments') {
+          @if (c.payments && c.payments.length > 0) {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="h-8 bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th class="py-2 px-3">Fecha</th>
+                    <th class="py-2 px-3">Monto</th>
+                    <th class="py-2 px-3">Método</th>
+                    <th class="py-2 px-3">Referencia</th>
+                    <th class="py-2 px-3">Estado</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (pay of c.payments; track pay.id) {
+                    <tr class="h-9 hover:bg-slate-50">
+                      <td class="py-2 px-3 font-mono">{{ pay.paidAt | date: 'dd/MM/yyyy' }}</td>
+                      <td class="py-2 px-3 font-mono font-semibold">{{ pay.currency }} {{ pay.amount }}</td>
+                      <td class="py-2 px-3">{{ pay.paymentMethod }}</td>
+                      <td class="py-2 px-3 font-mono">{{ pay.transactionRef || '-' }}</td>
+                      <td class="py-2 px-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                          {{ pay.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="py-10 text-center text-slate-400 space-y-2">
+              <svg class="w-10 h-10 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <p class="text-xs font-semibold text-slate-600">No hay registros de pagos ni abonos.</p>
+              <p class="text-[11px] text-slate-400">Los comprobantes y cobros se reflejarán conforme se formalicen los servicios.</p>
+            </div>
+          }
+        }
+
+        <!-- PESTAÑA: Tareas Operativas -->
+        @if (activeTab() === 'tasks') {
+          @if (c.serviceTasks && c.serviceTasks.length > 0) {
+            <div class="space-y-2">
+              @for (task of c.serviceTasks; track task.id) {
+                <div class="p-3 rounded-lg border border-slate-200 bg-white flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold text-slate-900">{{ task.title }}</div>
+                    <div class="text-[11px] text-slate-500">Vence: {{ task.dueDate || 'Sin fecha límite' }}</div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
+                      {{ task.priority }}
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700">
+                      {{ task.status }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="py-10 text-center text-slate-400 space-y-2">
+              <svg class="w-10 h-10 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <p class="text-xs font-semibold text-slate-600">No hay tareas pendientes asignadas a este cliente.</p>
+              <p class="text-[11px] text-slate-400">Las tarjetas del Tablero Kanban (Semana 10) se integrarán en esta bandeja.</p>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal de Edicion de Cliente -->
+@if (showEditModal() && customer()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs animate-fadeIn">
+    <div class="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden">
+      <!-- Encabezado del modal -->
+      <div class="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-[#F8FAFC]">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">Actualizar Datos del Cliente</h2>
+          <p class="text-[11px] text-slate-500">Modificación de ficha maestra en el CRM</p>
+        </div>
+        <button
+          (click)="closeEditModal()"
+          class="text-slate-400 hover:text-slate-600 p-1 rounded-[4px] hover:bg-slate-200/60 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Formulario modular reutilizable -->
+      <app-customer-form
+        [customer]="customer()"
+        [isModal]="true"
+        (saved)="onCustomerUpdated($event)"
+        (cancelled)="closeEditModal()"
+      />
+    </div>
+  </div>
+}

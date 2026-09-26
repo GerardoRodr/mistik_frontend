@@ -1,28 +1,39 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  ViewChild,
+  inject,
+  signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Customer, PaginationMeta } from '../../../core/models/customer.models';
+import { CustomerFormComponent } from '../customer-form/customer-form.component';
 
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, CustomerFormComponent],
   templateUrl: './customer-list.component.html'
 })
 export class CustomerListComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
-  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+
+  @ViewChild('searchInputRef') searchInputRef?: ElementRef<HTMLInputElement>;
 
   // Senales reactivas de estado para Data Grid ERP
   protected readonly customers = signal<Customer[]>([]);
-  protected readonly isLoading = signal(false);
-  protected readonly isCreating = signal(false);
+  protected readonly isLoading = signal<boolean>(false);
+  protected readonly isSearching = signal<boolean>(false);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly createError = signal<string | null>(null);
-  protected readonly showCreateModal = signal(false);
+  protected readonly showCreateModal = signal<boolean>(false);
+  protected readonly lastCreatedCustomer = signal<Customer | null>(null);
 
   // Metadatos de paginacion de alta densidad
   protected readonly meta = signal<PaginationMeta>({
@@ -32,23 +43,24 @@ export class CustomerListComponent implements OnInit {
     totalPages: 1
   });
 
-  // Parametro de busqueda reactiva
-  protected readonly searchInput = signal('');
+  // Senal de busqueda reactiva
+  protected readonly searchInput = signal<string>('');
   private readonly searchSubject = new Subject<string>();
 
-  // Formulario reactivo para alta de clientes
-  protected readonly createForm = this.fb.group({
-    documentType: ['DNI', [Validators.required]],
-    documentNumber: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(15)]],
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.email]],
-    phoneNumber: ['', [Validators.pattern(/^[0-9+\s-]{7,15}$/)]],
-    address: ['']
-  });
+  // Atajo de teclado para enfocar busqueda con la tecla / o Ctrl+K
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardShortcut(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    const isEditing = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+    if (!isEditing && (event.key === '/' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k'))) {
+      event.preventDefault();
+      this.searchInputRef?.nativeElement.focus();
+    }
+  }
 
   ngOnInit(): void {
-    // Busqueda reactiva con debounce de 350ms
+    // Busqueda reactiva con debounce de 350ms segun WBS 4.1.1.3
     this.searchSubject
       .pipe(
         debounceTime(350),
@@ -62,12 +74,15 @@ export class CustomerListComponent implements OnInit {
     this.loadCustomers();
   }
 
-  // Cargar datos desde el backend
+  // Cargar datos desde el backend central
   loadCustomers(searchQuery?: string): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
     const term = searchQuery !== undefined ? searchQuery : this.searchInput();
+    if (term.trim().length > 0) {
+      this.isSearching.set(true);
+    }
 
     this.customerService
       .getCustomers({
@@ -80,9 +95,11 @@ export class CustomerListComponent implements OnInit {
           this.customers.set(res.data);
           this.meta.set(res.meta);
           this.isLoading.set(false);
+          this.isSearching.set(false);
         },
         error: (err: HttpErrorResponse) => {
           this.isLoading.set(false);
+          this.isSearching.set(false);
           if (err.status === 0) {
             this.errorMessage.set('Sin conexion con el servidor central de la agencia.');
           } else {
@@ -103,6 +120,7 @@ export class CustomerListComponent implements OnInit {
   clearSearch(): void {
     this.searchInput.set('');
     this.searchSubject.next('');
+    this.searchInputRef?.nativeElement.focus();
   }
 
   // Navegar entre paginas
@@ -122,60 +140,30 @@ export class CustomerListComponent implements OnInit {
     this.loadCustomers();
   }
 
-  // Abrir modal de nuevo cliente
+  // Abrir modal de nuevo cliente con mascaras WBS 4.1.1.1
   openCreateModal(): void {
-    this.createForm.reset({ documentType: 'DNI' });
-    this.createError.set(null);
     this.showCreateModal.set(true);
   }
 
-  // Cerrar modal
+  // Cerrar modal de alta
   closeCreateModal(): void {
     this.showCreateModal.set(false);
-    this.createError.set(null);
   }
 
-  // Enviar formulario al backend
-  submitCreateCustomer(): void {
-    if (this.createForm.invalid || this.isCreating()) {
-      this.createForm.markAllAsTouched();
-      return;
-    }
+  // Callback cuando se guarda exitosamente un nuevo cliente
+  onCustomerCreated(customer: Customer): void {
+    this.closeCreateModal();
+    this.lastCreatedCustomer.set(customer);
+    this.loadCustomers();
 
-    this.isCreating.set(true);
-    this.createError.set(null);
+    // Auto-limpiar notificacion tras 6 segundos
+    setTimeout(() => {
+      this.lastCreatedCustomer.set(null);
+    }, 6000);
+  }
 
-    const val = this.createForm.getRawValue();
-
-    this.customerService
-      .createCustomer({
-        documentType: val.documentType!,
-        documentNumber: val.documentNumber!.trim(),
-        firstName: val.firstName!.trim(),
-        lastName: val.lastName!.trim(),
-        email: val.email ? val.email.trim() : undefined,
-        phoneNumber: val.phoneNumber ? val.phoneNumber.trim() : undefined,
-        address: val.address ? val.address.trim() : undefined
-      })
-      .subscribe({
-        next: () => {
-          this.isCreating.set(false);
-          this.closeCreateModal();
-          this.loadCustomers();
-        },
-        error: (err: HttpErrorResponse) => {
-          this.isCreating.set(false);
-          if (err.status === 409) {
-            this.createError.set(`Ya existe un cliente registrado con el documento ${val.documentType} ${val.documentNumber}.`);
-          } else if (err.error?.message) {
-            const msg = Array.isArray(err.error.message)
-              ? err.error.message.join(', ')
-              : err.error.message;
-            this.createError.set(msg);
-          } else {
-            this.createError.set('No se pudo completar el registro del cliente.');
-          }
-        }
-      });
+  // Navegar a la pantalla de Expediente 360 grados WBS 4.1.1.2
+  viewCustomerDetail(id: string): void {
+    this.router.navigate(['/crm/customers', id]);
   }
 }
