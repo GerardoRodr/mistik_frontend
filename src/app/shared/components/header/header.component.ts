@@ -5,7 +5,10 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-header',
   standalone: true,
   imports: [],
-  templateUrl: './header.component.html'
+  templateUrl: './header.component.html',
+  host: {
+    class: 'block shrink-0'
+  }
 })
 export class HeaderComponent {
   protected readonly authService = inject(AuthService);

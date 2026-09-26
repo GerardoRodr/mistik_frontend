@@ -1,9 +1,9 @@
 <aside
-  class="bg-[#0F172A] text-slate-200 flex flex-col transition-all duration-300 ease-in-out border-r border-[#1E293B] shrink-0 select-none z-30"
+  class="h-full bg-[#0F172A] text-slate-200 flex flex-col transition-all duration-300 ease-in-out border-r border-[#1E293B] shrink-0 select-none z-30"
   [style.width]="!isCollapsed() ? '260px' : '72px'"
 >
   <!-- Encabezado del ERP con marca corporativa -->
-  <div class="h-14 flex items-center justify-between px-4 border-b border-[#1E293B]">
+  <div class="h-14 flex items-center justify-between px-4 border-b border-[#1E293B] shrink-0">
     <div class="flex items-center gap-3 overflow-hidden">
       <!-- Isotipo corporativo con acento carmesi -->
       <div class="h-8 w-8 min-w-8 rounded-[6px] bg-[#E11D48] flex items-center justify-center font-black text-white text-base shadow-sm">
@@ -110,7 +110,7 @@
   </nav>
 
   <!-- Pie con estatus operativo de la estacion -->
-  <div class="p-3 border-t border-[#1E293B] text-[11px] text-slate-400 bg-[#0B1324]">
+  <div class="p-3 border-t border-[#1E293B] text-[11px] text-slate-400 bg-[#0B1324] shrink-0">
     @if (!isCollapsed()) {
       <div class="flex items-center justify-between">
         <div class="truncate">

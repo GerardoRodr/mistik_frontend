@@ -19,7 +19,10 @@ interface NavItem {
   selector: 'app-sidebar',
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
-  templateUrl: './sidebar.component.html'
+  templateUrl: './sidebar.component.html',
+  host: {
+    class: 'block h-full shrink-0'
+  }
 })
 export class SidebarComponent {
   protected readonly authService = inject(AuthService);
