@@ -1,9 +1,9 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-// Guardia de autenticacion para proteger rutas privadas
-export const authGuard: CanActivateFn = (_route, state) => {
+// Guardia funcional que valida sesion activa o retorna UrlTree hacia /login
+export const authGuard: CanActivateFn = (_route, state): boolean | UrlTree => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -11,9 +11,8 @@ export const authGuard: CanActivateFn = (_route, state) => {
     return true;
   }
 
-  // Redirigir al login guardando la ruta intentada
-  router.navigate(['/login'], {
+  // Retornar UrlTree atimico en lugar de navegacion manual
+  return router.createUrlTree(['/login'], {
     queryParams: { returnUrl: state.url }
   });
-  return false;
 };

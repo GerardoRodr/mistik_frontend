@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, ActivatedRouteSnapshot } from '@angular/router';
+import { provideRouter, ActivatedRouteSnapshot, UrlTree } from '@angular/router';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { roleGuard } from './role.guard';
 import { AuthService } from '../services/auth.service';
@@ -9,28 +9,21 @@ describe('roleGuard', () => {
   let authServiceMock: {
     hasRole: (roles: UserRole[]) => boolean;
   };
-  let routerMock: {
-    navigate: (commands: any[]) => Promise<boolean>;
-  };
 
   beforeEach(() => {
     authServiceMock = {
       hasRole: () => false
     };
 
-    routerMock = {
-      navigate: async () => true
-    };
-
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: authServiceMock },
-        { provide: Router, useValue: routerMock }
+        provideRouter([]),
+        { provide: AuthService, useValue: authServiceMock }
       ]
     });
   });
 
-  it('debe permitir acceso si el usuario cuenta con el rol requerido', () => {
+  it('debe permitir acceso retornando true si el rol es suficiente', () => {
     authServiceMock.hasRole = (roles) => roles.includes('ADMIN');
 
     const routeSnapshot = {
@@ -42,14 +35,8 @@ describe('roleGuard', () => {
     expect(result).toBe(true);
   });
 
-  it('debe bloquear y redirigir a unauthorized si el rol es insuficiente', () => {
+  it('debe retornar UrlTree hacia /unauthorized si el rol es insuficiente', () => {
     authServiceMock.hasRole = () => false;
-
-    let navigatedTo: any = null;
-    routerMock.navigate = async (commands) => {
-      navigatedTo = commands;
-      return true;
-    };
 
     const routeSnapshot = {
       data: { roles: ['ADMIN'] }
@@ -57,7 +44,7 @@ describe('roleGuard', () => {
 
     const result = TestBed.runInInjectionContext(() => roleGuard(routeSnapshot, {} as any));
 
-    expect(result).toBe(false);
-    expect(navigatedTo).toEqual(['/unauthorized']);
+    expect(result instanceof UrlTree).toBe(true);
+    expect((result as UrlTree).toString()).toBe('/unauthorized');
   });
 });
