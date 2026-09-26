@@ -1,0 +1,383 @@
+<div class="space-y-6">
+  <!-- Cabecera de la seccion -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Directorio de Clientes CRM</h1>
+        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-700 border border-sky-200">
+          HU-04 / WBS 4.1.1.1
+        </span>
+      </div>
+      <p class="text-sm text-slate-500 mt-1">
+        Consulta centralizada de clientes con busqueda optimizada indexada en base de datos.
+      </p>
+    </div>
+
+    <!-- Accion de registro -->
+    <button
+      (click)="openCreateModal()"
+      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-sm shadow-sky-600/25 transition cursor-pointer"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>Registrar Cliente</span>
+    </button>
+  </div>
+
+  <!-- Barra de controles y busqueda reactiva -->
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-3">
+    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <!-- Entrada de busqueda reactiva con debounce -->
+      <div class="relative flex-1">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          [value]="searchInput()"
+          (input)="onSearchChange($event)"
+          placeholder="Buscar por DNI, pasaporte, nombres o apellidos (tiempo < 5s)..."
+          class="w-full pl-9 pr-9 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900"
+        />
+        @if (searchInput()) {
+          <button
+            (click)="clearSearch()"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+            title="Limpiar filtro"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
+      </div>
+
+      <!-- Selector de limite por pagina y recarga -->
+      <div class="flex items-center gap-3 justify-end">
+        <div class="flex items-center gap-2 text-xs text-slate-600">
+          <span>Mostrar:</span>
+          <select
+            (change)="onLimitChange($event)"
+            [value]="meta().limit"
+            class="py-1.5 px-2.5 rounded-lg border border-slate-300 text-xs font-medium bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+          >
+            <option [value]="5">5 filas</option>
+            <option [value]="10">10 filas</option>
+            <option [value]="25">25 filas</option>
+          </select>
+        </div>
+
+        <button
+          (click)="loadCustomers()"
+          class="p-2 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+          title="Refrescar datos"
+        >
+          <svg class="w-4 h-4" [class.animate-spin]="isLoading()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Indicador de cumplimiento de rendimiento RNF -->
+    <div class="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-100">
+      <span class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span>Requisito no funcional RNF 2.2.1.2: Tiempo de busqueda menor a 5 segundos</span>
+      </span>
+      <span>Total registrados: <strong>{{ meta().total }}</strong></span>
+    </div>
+  </div>
+
+  <!-- Alerta de error si falla la peticion -->
+  @if (errorMessage()) {
+    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+      <button (click)="loadCustomers()" class="font-bold underline hover:text-rose-900 cursor-pointer">
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Contenedor de tabla principal -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+            <th class="py-3 px-4">Documento</th>
+            <th class="py-3 px-4">Cliente</th>
+            <th class="py-3 px-4">Contacto</th>
+            <th class="py-3 px-4">Direccion</th>
+            <th class="py-3 px-4">Registro</th>
+            <th class="py-3 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <!-- Estado cargando con efecto visual -->
+          @if (isLoading()) {
+            <tr>
+              <td colspan="6" class="py-12 text-center text-slate-400">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <svg class="animate-spin h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span class="text-xs font-medium">Consultando clientes en el servidor...</span>
+                </div>
+              </td>
+            </tr>
+          } @else if (customers().length === 0) {
+            <!-- Estado sin resultados -->
+            <tr>
+              <td colspan="6" class="py-12 text-center text-slate-500">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    </svg>
+                  </div>
+                  <span class="text-sm font-semibold text-slate-700">No se encontraron clientes</span>
+                  <p class="text-xs text-slate-400 max-w-sm">
+                    @if (searchInput()) {
+                      No hay coincidencias para "{{ searchInput() }}". Intenta con otro documento o nombre.
+                    } @else {
+                      Aun no hay clientes registrados en la base de datos.
+                    }
+                  </p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            <!-- Filas de clientes iteradas -->
+            @for (customer of customers(); track customer.id) {
+              <tr class="hover:bg-slate-50/70 transition">
+                <!-- Documento con badge -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                      {{ customer.documentType }}
+                    </span>
+                    <span class="font-mono font-semibold text-slate-900 text-xs">
+                      {{ customer.documentNumber }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Nombres y apellidos -->
+                <td class="py-3 px-4">
+                  <div class="font-semibold text-slate-900">{{ customer.firstName }} {{ customer.lastName }}</div>
+                  <div class="text-[11px] text-slate-400 font-mono">ID: {{ customer.id.slice(0, 8) }}...</div>
+                </td>
+
+                <!-- Contacto -->
+                <td class="py-3 px-4">
+                  <div class="text-xs text-slate-800">{{ customer.phoneNumber || 'Sin telefono' }}</div>
+                  <div class="text-xs text-slate-500">{{ customer.email || 'Sin correo' }}</div>
+                </td>
+
+                <!-- Direccion -->
+                <td class="py-3 px-4 text-xs text-slate-600 max-w-[200px] truncate" [title]="customer.address || ''">
+                  {{ customer.address || '-' }}
+                </td>
+
+                <!-- Fecha de registro -->
+                <td class="py-3 px-4 text-xs text-slate-500 whitespace-nowrap">
+                  {{ customer.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <!-- Acciones -->
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-sky-700 bg-sky-50 border border-sky-200">
+                    Expediente 360 (Hito 2)
+                  </span>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginacion inferior -->
+    <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+      <div>
+        Pagina <span class="font-semibold text-slate-900">{{ meta().page }}</span> de
+        <span class="font-semibold text-slate-900">{{ meta().totalPages }}</span>
+        (Total: {{ meta().total }} registros)
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <button
+          (click)="goToPage(meta().page - 1)"
+          [disabled]="meta().page <= 1 || isLoading()"
+          class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          Anterior
+        </button>
+        <button
+          (click)="goToPage(meta().page + 1)"
+          [disabled]="meta().page >= meta().totalPages || isLoading()"
+          class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para registrar nuevo cliente -->
+@if (showCreateModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden">
+      <!-- Cabecera del modal -->
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Registrar Nuevo Cliente</h2>
+          <p class="text-xs text-slate-500">Expediente maestro para el CRM Mistik Tours</p>
+        </div>
+        <button
+          (click)="closeCreateModal()"
+          class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Alerta de conflicto o error -->
+      @if (createError()) {
+        <div class="mx-6 mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+          <svg class="w-4 h-4 min-w-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="font-medium">{{ createError() }}</span>
+        </div>
+      }
+
+      <!-- Formulario de cliente -->
+      <form [formGroup]="createForm" (ngSubmit)="submitCreateCustomer()" class="p-6 space-y-4">
+        <!-- Tipo y numero de documento -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo Doc. *</label>
+            <select
+              formControlName="documentType"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+            >
+              <option value="DNI">DNI</option>
+              <option value="PASAPORTE">PASAPORTE</option>
+              <option value="CE">C.E.</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Numero Documento *</label>
+            <input
+              type="text"
+              formControlName="documentNumber"
+              placeholder="Ej. 74859612"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              [class.border-rose-400]="createForm.get('documentNumber')?.touched && createForm.get('documentNumber')?.invalid"
+            />
+            @if (createForm.get('documentNumber')?.touched && createForm.get('documentNumber')?.invalid) {
+              <p class="text-[11px] text-rose-600 mt-1">El numero de documento es obligatorio (min 8 caracteres).</p>
+            }
+          </div>
+        </div>
+
+        <!-- Nombres y apellidos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nombres *</label>
+            <input
+              type="text"
+              formControlName="firstName"
+              placeholder="Nombres del cliente"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              [class.border-rose-400]="createForm.get('firstName')?.touched && createForm.get('firstName')?.invalid"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Apellidos *</label>
+            <input
+              type="text"
+              formControlName="lastName"
+              placeholder="Apellidos del cliente"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              [class.border-rose-400]="createForm.get('lastName')?.touched && createForm.get('lastName')?.invalid"
+            />
+          </div>
+        </div>
+
+        <!-- Contacto: Telefono y correo -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Telefono / Celular</label>
+            <input
+              type="text"
+              formControlName="phoneNumber"
+              placeholder="+51 987654321"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Correo Electronico</label>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="cliente@ejemplo.com"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <!-- Direccion domiciliaria -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Direccion Domiciliaria</label>
+          <input
+            type="text"
+            formControlName="address"
+            placeholder="Av. America Sur 1234, Trujillo"
+            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+          />
+        </div>
+
+        <!-- Botones de accion del modal -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="isCreating()"
+            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-sm transition disabled:opacity-50"
+          >
+            @if (isCreating()) {
+              <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Guardando...</span>
+            } @else {
+              <span>Guardar Cliente</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
