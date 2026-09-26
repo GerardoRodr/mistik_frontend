@@ -7,6 +7,9 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, HeaderComponent, SidebarComponent],
-  templateUrl: './layout.component.html'
+  templateUrl: './layout.component.html',
+  host: {
+    class: 'block h-full w-full'
+  }
 })
 export class LayoutComponent {}

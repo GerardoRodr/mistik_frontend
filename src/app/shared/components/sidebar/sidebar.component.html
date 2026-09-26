@@ -1,7 +1,6 @@
 <aside
   class="bg-[#0F172A] text-slate-200 flex flex-col transition-all duration-300 ease-in-out border-r border-[#1E293B] shrink-0 select-none z-30"
-  [class.w-[260px]="!isCollapsed()"
-  [class.w-[72px]="isCollapsed()"
+  [style.width]="!isCollapsed() ? '260px' : '72px'"
 >
   <!-- Encabezado del ERP con marca corporativa -->
   <div class="h-14 flex items-center justify-between px-4 border-b border-[#1E293B]">
