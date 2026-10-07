@@ -82,10 +82,10 @@
       }
     </div>
 
-    <!-- SECCION 2: Datos de Localizador PNR y Mayorista (WBS 6.1.1.1 & 6.1.1.2) -->
+    <!-- SECCION 2: Datos de Localizador PNR y Mayorista -->
     <div class="p-4 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-4">
       <h3 class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-        2. Codigo PNR y Consolidadora Mayorista (WBS 6.1.1.1 / 6.1.1.2)
+        2. Codigo PNR y Consolidadora Mayorista
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -117,7 +117,7 @@
           }
         </div>
 
-        <!-- Selector de Consolidadora Mayorista (WBS 6.1.1.2) -->
+        <!-- Selector de Consolidadora Mayorista -->
         <div>
           <label class="block text-[11px] font-semibold text-slate-700 mb-1">
             Consolidadora / Aerolinea Emisora *
@@ -146,12 +146,12 @@
                       <span class="font-bold text-slate-900">{{ w.name }}</span>
                       <span class="ml-2 text-[10px] text-slate-400 font-mono">{{ w.code }}</span>
                     </div>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold"
-                          [class.bg-sky-100]="w.category === 'CONSOLIDADORA'"
-                          [class.text-sky-800]="w.category === 'CONSOLIDADORA'"
-                          [class.bg-purple-100]="w.category === 'AEROLINEA'"
-                          [class.text-purple-800]="w.category === 'AEROLINEA'">
-                      {{ w.category }}
+                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase"
+                          [class.bg-sky-100]="w.type === 'WHOLESALER' || w.category === 'CONSOLIDADORA'"
+                          [class.text-sky-800]="w.type === 'WHOLESALER' || w.category === 'CONSOLIDADORA'"
+                          [class.bg-purple-100]="w.type === 'AIRLINE' || w.category === 'AEROLINEA'"
+                          [class.text-purple-800]="w.type === 'AIRLINE' || w.category === 'AEROLINEA'">
+                      {{ (w.type === 'AIRLINE' || w.category === 'AEROLINEA') ? 'Aerolinea' : 'Consolidadora' }}
                     </span>
                   </button>
                 }

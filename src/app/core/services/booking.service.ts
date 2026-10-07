@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AllowedTransitionsResponse,
@@ -19,70 +19,93 @@ import {
 export class BookingService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/v1/bookings`;
+  private readonly wholesalersUrl = `${environment.apiUrl}/api/v1/wholesalers`;
 
-  // Catalogo de consolidadoras mayoristas y aerolineas autorizadas
+  // Catalogo offline de respaldo para consolidadoras mayoristas y aerolineas autorizadas
   private readonly wholesalersCatalog: Wholesaler[] = [
     {
       id: 'wh-costamar',
       code: 'COSTAMAR',
       name: 'Costamar Travel',
+      type: 'WHOLESALER',
       category: 'CONSOLIDADORA',
       description: 'Consolidador mayorista internacional lider en Peru',
-      contactPhone: '+51 1 616-9000'
+      contactPhone: '+51 1 616-9000',
+      isActive: true
     },
     {
       id: 'wh-agil',
       code: 'AGIL',
       name: 'Agil Operador Mayorista',
+      type: 'WHOLESALER',
       category: 'CONSOLIDADORA',
       description: 'Emisiones de vuelos y servicios corporativos',
-      contactPhone: '+51 1 610-7777'
+      contactPhone: '+51 1 610-7777',
+      isActive: true
     },
     {
       id: 'wh-euroamerican',
       code: 'EUROAMERICAN',
       name: 'Euroamerican Assistance & Tours',
+      type: 'WHOLESALER',
       category: 'CONSOLIDADORA',
       description: 'Operador mayorista de rutas hacia Europa y Norteamerica',
-      contactPhone: '+51 1 200-5000'
+      contactPhone: '+51 1 200-5000',
+      isActive: true
     },
     {
       id: 'wh-ctm',
       code: 'CTM',
       name: 'CTM Tours',
+      type: 'WHOLESALER',
       category: 'CONSOLIDADORA',
       description: 'GDS Sabre y Amadeus mayorista para agencias',
-      contactPhone: '+51 1 615-8000'
+      contactPhone: '+51 1 615-8000',
+      isActive: true
     },
     {
       id: 'wh-latam',
       code: 'LATAM',
       name: 'LATAM Airlines Group',
+      type: 'AIRLINE',
       category: 'AEROLINEA',
       description: 'Alianza y rutas troncales directas en Sudamerica',
-      contactPhone: '+51 1 213-8200'
+      contactPhone: '+51 1 213-8200',
+      isActive: true
     },
     {
       id: 'wh-copa',
       code: 'COPA',
       name: 'Copa Airlines',
+      type: 'AIRLINE',
       category: 'AEROLINEA',
       description: 'Hub de las Americas y conexiones globales',
-      contactPhone: '+51 1 610-0808'
+      contactPhone: '+51 1 610-0808',
+      isActive: true
     },
     {
       id: 'wh-avianca',
       code: 'AVIANCA',
       name: 'Avianca',
+      type: 'AIRLINE',
       category: 'AEROLINEA',
       description: 'Conectividad andina y Centroamerica',
-      contactPhone: '+51 1 511-8222'
+      contactPhone: '+51 1 511-8222',
+      isActive: true
     }
   ];
 
-  // Obtener catalogo de consolidadoras mayoristas
-  getWholesalers(): Wholesaler[] {
-    return [...this.wholesalersCatalog];
+  // Obtener catalogo de consolidadoras mayoristas y aerolineas (GET /api/v1/wholesalers)
+  getWholesalers(active = true): Observable<Wholesaler[]> {
+    const params = new HttpParams().set('active', active.toString());
+    return this.http.get<Wholesaler[]>(this.wholesalersUrl, { params }).pipe(
+      catchError(() => of(this.wholesalersCatalog))
+    );
+  }
+
+  // Obtener detalle individual de consolidadora por ID (GET /api/v1/wholesalers/:id)
+  getWholesalerById(id: string): Observable<Wholesaler> {
+    return this.http.get<Wholesaler>(`${this.wholesalersUrl}/${id}`);
   }
 
   // Listar reservas con paginacion y filtros

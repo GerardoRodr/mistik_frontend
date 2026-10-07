@@ -71,7 +71,8 @@ export class BookingCreateComponent implements OnInit {
       (w) =>
         w.name.toLowerCase().includes(filter) ||
         w.code.toLowerCase().includes(filter) ||
-        w.category.toLowerCase().includes(filter)
+        (w.type && w.type.toLowerCase().includes(filter)) ||
+        (w.category && w.category.toLowerCase().includes(filter))
     );
   });
 
@@ -116,8 +117,11 @@ export class BookingCreateComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Cargar catalogo de consolidadoras mayoristas
-    this.wholesalers.set(this.bookingService.getWholesalers());
+    // Cargar catalogo de consolidadoras mayoristas de forma asincrona
+    this.bookingService.getWholesalers().subscribe({
+      next: (data) => this.wholesalers.set(data),
+      error: () => this.wholesalers.set([])
+    });
 
     // Agregar al menos un pasajero inicial en el FormArray
     if (this.passengersArray.length === 0) {
@@ -151,7 +155,7 @@ export class BookingCreateComponent implements OnInit {
     }
   }
 
-  // Conversion automatica a mayusculas en tiempo real para el codigo PNR (WBS 6.1.1.1)
+  // Conversion automatica a mayusculas en tiempo real para el codigo PNR
   onPnrInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const upperValue = (input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -223,14 +227,44 @@ export class BookingCreateComponent implements OnInit {
     });
   }
 
-  // Seleccionar consolidadora mayorista del catalogo (WBS 6.1.1.2)
+  // Seleccionar consolidadora mayorista del catalogo
   selectWholesaler(wholesaler: Wholesaler): void {
     this.selectedWholesaler.set(wholesaler);
+    const isAirline = wholesaler.type === 'AIRLINE' || wholesaler.category === 'AEROLINEA';
     this.form.patchValue({
       wholesalerId: wholesaler.id,
-      airline: wholesaler.category === 'AEROLINEA' ? wholesaler.name : this.form.get('airline')?.value
+      airline: isAirline ? wholesaler.name : this.form.get('airline')?.value
     });
     this.wholesalerFilter.set(wholesaler.name);
+  }
+
+  // Empaquetar datos de itinerario en campo notes estructurado
+  private formatNotesWithItinerary(formVal: any, wholesalerName?: string): string | undefined {
+    const segments: string[] = [];
+    if (formVal.origin && formVal.destination) {
+      segments.push(`Ruta: ${formVal.origin.trim().toUpperCase()} -> ${formVal.destination.trim().toUpperCase()}`);
+    }
+    if (formVal.departureDate) {
+      segments.push(`Salida: ${formVal.departureDate}`);
+    }
+    if (formVal.returnDate) {
+      segments.push(`Retorno: ${formVal.returnDate}`);
+    }
+    const airline = formVal.airline || wholesalerName;
+    if (airline) {
+      segments.push(`Aerolinea: ${airline.trim()}`);
+    }
+    if (formVal.flightNumber) {
+      segments.push(`Vuelo: ${formVal.flightNumber.trim()}`);
+    }
+
+    const itinerarySummary = segments.join(' | ');
+    const userNotes = formVal.notes?.trim();
+
+    if (itinerarySummary && userNotes) {
+      return `${itinerarySummary}. Observaciones: ${userNotes}`;
+    }
+    return itinerarySummary || userNotes || undefined;
   }
 
   // Enviar formulario y crear reserva en backend
@@ -246,6 +280,8 @@ export class BookingCreateComponent implements OnInit {
 
     const formVal = this.form.getRawValue();
     const wholesaler = this.selectedWholesaler();
+    const wholesalerName = wholesaler ? wholesaler.name : undefined;
+    const formattedNotes = this.formatNotesWithItinerary(formVal, wholesalerName);
 
     const payload: CreateBookingDto = {
       customerId: formVal.customerId!,
@@ -254,14 +290,7 @@ export class BookingCreateComponent implements OnInit {
       currency: formVal.currency as Currency,
       pnr: formVal.pnr!.toUpperCase(),
       wholesalerId: formVal.wholesalerId || undefined,
-      wholesalerName: wholesaler ? wholesaler.name : undefined,
-      origin: formVal.origin || undefined,
-      destination: formVal.destination || undefined,
-      departureDate: formVal.departureDate || undefined,
-      returnDate: formVal.returnDate || undefined,
-      airline: formVal.airline || (wholesaler?.category === 'AEROLINEA' ? wholesaler.name : undefined),
-      flightNumber: formVal.flightNumber || undefined,
-      notes: formVal.notes || undefined,
+      notes: formattedNotes,
       passengers: formVal.passengers?.map((p: any) => ({
         documentType: p.documentType,
         documentNumber: p.documentNumber,
