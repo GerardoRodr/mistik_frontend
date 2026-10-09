@@ -370,6 +370,20 @@
 
         <!-- PESTAÑA: Reservas Aereas -->
         @if (activeTab() === 'bookings') {
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-bold text-slate-800 text-xs">Historial de Expedientes PNR</span>
+            <button
+              type="button"
+              (click)="openCreateBookingModal()"
+              class="h-7 px-2.5 rounded-[4px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold text-[11px] transition cursor-pointer flex items-center gap-1"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Emitir Reserva para este Cliente</span>
+            </button>
+          </div>
+
           @if (c.bookings && c.bookings.length > 0) {
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-xs">
@@ -578,6 +592,38 @@
         (saved)="onCustomerUpdated($event)"
         (cancelled)="closeEditModal()"
       />
+    </div>
+  </div>
+}
+
+<!-- Modal de Emision de Reserva para este Cliente -->
+@if (showCreateBookingModal() && customer()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs animate-fadeIn">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 z-10 px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-[#F8FAFC]">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">Nueva Reserva Aérea PNR</h2>
+          <p class="text-[11px] text-slate-500 font-mono">
+            Titular: {{ customer()?.firstName }} {{ customer()?.lastName }} ({{ customer()?.documentNumber }})
+          </p>
+        </div>
+        <button
+          (click)="closeCreateBookingModal()"
+          class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <app-booking-create
+          [preselectedCustomerId]="customer()?.id"
+          [isModal]="true"
+          (saved)="onBookingCreated()"
+          (cancelled)="closeCreateBookingModal()"
+        />
+      </div>
     </div>
   </div>
 }

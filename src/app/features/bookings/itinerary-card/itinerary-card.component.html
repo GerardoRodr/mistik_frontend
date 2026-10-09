@@ -1,0 +1,250 @@
+<div class="bg-white rounded-lg border border-slate-200 shadow-2xs hover:shadow-sm transition p-4 space-y-3 text-xs text-slate-700">
+  <!-- Cabecera de la Tarjeta de Itinerario -->
+  <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+    <div class="flex items-center gap-2">
+      <!-- Badge de Estado segun Design System -->
+      <span
+        class="px-2 py-0.5 rounded-full text-[10px] font-bold border"
+        [ngClass]="getStatusBadgeClass(booking().status)"
+      >
+        {{ getStatusLabel(booking().status) }}
+      </span>
+
+      <!-- Codigo de expediente -->
+      <span class="font-mono text-[11px] text-slate-500 font-semibold">
+        {{ booking().bookingCode || booking().code }}
+      </span>
+    </div>
+
+    <!-- Codigo Localizador PNR con boton de copiado rapido -->
+    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-[4px]">
+      <span class="text-[10px] text-slate-400 uppercase font-semibold">PNR:</span>
+      <span class="font-mono font-extrabold text-slate-900 tracking-wider">
+        {{ displayPnr() }}
+      </span>
+      <button
+        type="button"
+        (click)="copyPnr($event)"
+        class="text-slate-400 hover:text-slate-700 p-0.5 rounded hover:bg-slate-200 transition cursor-pointer"
+        [title]="copiedPnr() ? 'Copiado al portapapeles' : 'Copiar PNR'"
+      >
+        @if (copiedPnr()) {
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        } @else {
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+          </svg>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Tramo de Vuelo: Origen -> Destino -->
+  <div class="flex items-center justify-between py-1 bg-gradient-to-r from-slate-50 via-white to-slate-50 px-3 rounded border border-slate-100">
+    <div>
+      <div class="text-sm font-extrabold text-slate-900 font-mono">
+        {{ booking().origin || 'TRU' }}
+      </div>
+      <div class="text-[10px] text-slate-400">Salida</div>
+    </div>
+
+    <!-- Indicador de Vuelo -->
+    <div class="flex-1 flex flex-col items-center px-4">
+      <div class="text-[10px] text-slate-500 font-semibold mb-0.5 truncate max-w-[140px]">
+        {{ booking().airline || booking().wholesalerName || 'Vuelo Regular' }}
+      </div>
+      <div class="w-full flex items-center gap-1.5">
+        <div class="h-0.5 flex-1 bg-slate-300 border-dashed"></div>
+        <svg class="w-4 h-4 text-[#E11D48] rotate-90 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L4 12h4v8h8v-8h4L12 2z"/>
+        </svg>
+        <div class="h-0.5 flex-1 bg-slate-300 border-dashed"></div>
+      </div>
+      <div class="text-[10px] font-mono text-slate-400 mt-0.5">
+        {{ booking().departureDate ? (booking().departureDate | date: 'dd/MM/yyyy') : 'Fecha por confirmar' }}
+      </div>
+    </div>
+
+    <div class="text-right">
+      <div class="text-sm font-extrabold text-slate-900 font-mono">
+        {{ booking().destination || 'LIM' }}
+      </div>
+      <div class="text-[10px] text-slate-400">Llegada</div>
+    </div>
+  </div>
+
+  <!-- Detalle del Cliente y Pasajeros Vinculados -->
+  <div class="space-y-1.5 pt-1">
+    <div class="flex items-center justify-between text-[11px]">
+      <span class="text-slate-500 font-medium">Titular:</span>
+      <span class="font-bold text-slate-900">
+        {{ booking().customer ? (booking().customer!.firstName + ' ' + booking().customer!.lastName) : 'Titular no asignado' }}
+      </span>
+    </div>
+
+    @if (booking().passengers && booking().passengers!.length > 0) {
+      <div class="flex items-center justify-between text-[11px]">
+        <span class="text-slate-500 font-medium">Pasajeros ({{ booking().passengers!.length }}):</span>
+        <div class="text-right truncate max-w-[180px]">
+          @for (p of booking().passengers; track p.documentNumber) {
+            <span class="inline-block text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded font-mono ml-1">
+              {{ p.firstName }} {{ p.lastName }}
+            </span>
+          }
+        </div>
+      </div>
+    }
+
+    @if (booking().wholesalerName) {
+      <div class="flex items-center justify-between text-[11px]">
+        <span class="text-slate-500 font-medium">Consolidadora:</span>
+        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+          {{ booking().wholesalerName }}
+        </span>
+      </div>
+    }
+  </div>
+
+  <!-- Pie de Tarjeta: Importe y Boton de Transicion de Estados -->
+  <div class="flex items-center justify-between pt-2.5 border-t border-slate-100">
+    <div>
+      <span class="text-[10px] text-slate-400 block uppercase font-semibold">Total Emitido</span>
+      <span class="font-mono text-sm font-extrabold text-slate-900">
+        {{ booking().currency }} {{ booking().totalAmount | number: '1.2-2' }}
+      </span>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      @if (booking().status !== 'COMPLETED' && booking().status !== 'CANCELLED') {
+        <button
+          type="button"
+          (click)="openTransitionModal()"
+          [disabled]="isTransitioning()"
+          class="h-7 px-2.5 rounded-[4px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold text-[11px] shadow-2xs transition cursor-pointer flex items-center gap-1 disabled:opacity-50"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          Transicionar
+        </button>
+      } @else {
+        <span class="text-[10px] font-semibold text-slate-400 uppercase font-mono px-2 py-0.5 rounded bg-slate-50">
+          Estado Final
+        </span>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Modal Interactivo de Transicion de Estado de Vuelos (Maquina de Estados) -->
+@if (showTransitionModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs animate-fadeIn">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden text-xs">
+      <!-- Encabezado del modal -->
+      <div class="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-[#F8FAFC]">
+        <div>
+          <h3 class="font-bold text-slate-900">Transicion de Estado de Vuelo</h3>
+          <p class="text-[11px] text-slate-500 font-mono">PNR: {{ displayPnr() }} | Actual: {{ booking().status }}</p>
+        </div>
+        <button
+          (click)="closeTransitionModal()"
+          class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Contenido del modal -->
+      <div class="p-5 space-y-4">
+        @if (transitionError()) {
+          <div class="p-2.5 rounded bg-rose-50 border border-rose-200 text-rose-800 text-[11px] font-medium">
+            {{ transitionError() }}
+          </div>
+        }
+
+        <!-- Seleccion de Estado Destino -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">
+            Nuevo Estado Destino Permitido *
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            @for (target of allowedTransitions(); track target) {
+              <button
+                type="button"
+                (click)="selectedTargetStatus.set(target)"
+                class="p-2.5 rounded border text-left transition font-semibold flex items-center justify-between cursor-pointer"
+                [class.border-[#E11D48]]="selectedTargetStatus() === target"
+                [class.bg-rose-50/60]="selectedTargetStatus() === target"
+                [class.text-[#E11D48]]="selectedTargetStatus() === target"
+                [class.border-slate-200]="selectedTargetStatus() !== target"
+                [class.text-slate-700]="selectedTargetStatus() !== target"
+              >
+                <span>{{ getStatusLabel(target) }}</span>
+                @if (selectedTargetStatus() === target) {
+                  <span class="w-2 h-2 rounded-full bg-[#E11D48]"></span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Campos condicionales segun el estado seleccionado -->
+        @if (selectedTargetStatus() === 'CANCELLED') {
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">
+              Motivo Obligatorio de Cancelacion (min. 5 caracteres) *
+            </label>
+            <textarea
+              [ngModel]="cancellationReason()"
+              (ngModelChange)="cancellationReason.set($event)"
+              rows="2"
+              placeholder="Desistimiento de viaje, falta de pago o cancelacion voluntaria..."
+              class="w-full p-2 rounded border border-slate-300 text-xs focus:ring-1 focus:ring-[#E11D48]"
+            ></textarea>
+          </div>
+        }
+
+        @if (selectedTargetStatus() === 'IN_PROCESS') {
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">
+              Numero de Boleto Emitido (Ticket Number)
+            </label>
+            <input
+              type="text"
+              [ngModel]="ticketNumber()"
+              (ngModelChange)="ticketNumber.set($event)"
+              placeholder="EJ: 045-9876543210"
+              class="w-full h-8 px-2.5 rounded border border-slate-300 font-mono text-xs focus:ring-1 focus:ring-[#E11D48]"
+            />
+          </div>
+        }
+      </div>
+
+      <!-- Pie del modal -->
+      <div class="px-5 py-3 border-t border-slate-200 flex justify-end gap-2 bg-[#F8FAFC]">
+        <button
+          type="button"
+          (click)="closeTransitionModal()"
+          class="h-7 px-3 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold cursor-pointer"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="confirmTransition()"
+          [disabled]="isTransitioning() || !selectedTargetStatus()"
+          class="h-7 px-4 rounded bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+        >
+          @if (isTransitioning()) {
+            <span class="animate-spin text-xs">...</span>
+          }
+          Confirmar Transicion
+        </button>
+      </div>
+    </div>
+  </div>
+}

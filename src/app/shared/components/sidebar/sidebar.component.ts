@@ -51,9 +51,7 @@ export class SidebarComponent {
         {
           label: 'Reservas & Vuelos',
           path: '/reservas',
-          icon: 'plane',
-          badge: 'Proximo',
-          disabled: true
+          icon: 'plane'
         },
         {
           label: 'Tramites de Visas',

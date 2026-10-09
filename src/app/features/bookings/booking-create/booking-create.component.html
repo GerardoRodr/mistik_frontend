@@ -1,0 +1,395 @@
+<div class="space-y-5 text-xs text-slate-700">
+  <!-- Mensaje de error general del servidor -->
+  @if (errorMessage()) {
+    <div class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-2.5">
+      <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div class="flex-1 font-medium">{{ errorMessage() }}</div>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+    <!-- SECCION 1: Cliente Titular -->
+    <div class="p-4 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-3">
+      <div class="flex items-center justify-between">
+        <label class="block font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+          1. Cliente Titular de la Reserva *
+        </label>
+        @if (selectedCustomer()) {
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-mono">
+            ID: {{ selectedCustomer()?.documentNumber }}
+          </span>
+        }
+      </div>
+
+      <!-- Buscador reactivo de cliente con autocompletado -->
+      <div class="relative">
+        <div class="relative">
+          <input
+            type="text"
+            [value]="customerSearchTerm()"
+            (input)="onCustomerSearchInput($event)"
+            placeholder="Buscar por DNI o nombres de pasajero..."
+            class="w-full h-8 px-3 pr-8 rounded-[4px] border bg-white text-xs text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+            [class.border-rose-400]="form.get('customerId')?.invalid && form.get('customerId')?.touched"
+            [class.border-slate-300]="!(form.get('customerId')?.invalid && form.get('customerId')?.touched)"
+          />
+          @if (isSearchingCustomers()) {
+            <div class="absolute right-2.5 top-2 text-slate-400">
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+            </div>
+          }
+        </div>
+
+        <!-- Lista desplegable de sugerencias de clientes -->
+        @if (customerSearchResults().length > 0) {
+          <div class="absolute z-30 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
+            @for (cust of customerSearchResults(); track cust.id) {
+              <button
+                type="button"
+                (click)="selectCustomer(cust)"
+                class="w-full p-2.5 text-left hover:bg-slate-50 transition flex items-center justify-between text-xs cursor-pointer"
+              >
+                <div>
+                  <div class="font-semibold text-slate-900">{{ cust.firstName }} {{ cust.lastName }}</div>
+                  <div class="text-[11px] text-slate-500 font-mono">{{ cust.documentType }}: {{ cust.documentNumber }}</div>
+                </div>
+                <span class="text-[10px] text-slate-400 font-mono">{{ cust.phoneNumber || 'Sin telf.' }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (form.get('customerId')?.invalid && form.get('customerId')?.touched) {
+        <p class="text-[11px] text-rose-600 font-medium">Debe seleccionar un cliente titular para el expediente.</p>
+      }
+
+      @if (selectedCustomer()) {
+        <div class="p-2.5 rounded bg-white border border-slate-200 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-slate-900">{{ selectedCustomer()?.firstName }} {{ selectedCustomer()?.lastName }}</div>
+            <div class="text-[11px] text-slate-500">{{ selectedCustomer()?.email || 'Sin correo registrado' }}</div>
+          </div>
+          <span class="text-[11px] font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+            {{ selectedCustomer()?.documentType }} {{ selectedCustomer()?.documentNumber }}
+          </span>
+        </div>
+      }
+    </div>
+
+    <!-- SECCION 2: Datos de Localizador PNR y Mayorista (WBS 6.1.1.1 & 6.1.1.2) -->
+    <div class="p-4 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-4">
+      <h3 class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+        2. Codigo PNR y Consolidadora Mayorista (WBS 6.1.1.1 / 6.1.1.2)
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Campo PNR con validacion estricta de 6 caracteres -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="pnrInput" class="block text-[11px] font-semibold text-slate-700">
+              Codigo Localizador PNR (6 Caracteres) *
+            </label>
+            <span class="text-[10px] font-mono text-slate-400">
+              {{ form.get('pnr')?.value?.length || 0 }}/6
+            </span>
+          </div>
+          <input
+            id="pnrInput"
+            type="text"
+            formControlName="pnr"
+            (input)="onPnrInput($event)"
+            maxlength="6"
+            placeholder="EJ: LIM456"
+            class="w-full h-8 px-3 rounded-[4px] border font-mono font-bold uppercase tracking-widest text-slate-900 bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+            [class.border-rose-400]="form.get('pnr')?.invalid && form.get('pnr')?.touched"
+            [class.border-slate-300]="!(form.get('pnr')?.invalid && form.get('pnr')?.touched)"
+          />
+          @if (form.get('pnr')?.invalid && form.get('pnr')?.touched) {
+            <p class="text-[11px] text-rose-600 font-medium mt-1">
+              El PNR debe tener exactamente 6 caracteres alfanumericos (ej. LAT987).
+            </p>
+          }
+        </div>
+
+        <!-- Selector de Consolidadora Mayorista (WBS 6.1.1.2) -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Consolidadora / Aerolinea Emisora *
+          </label>
+          <div class="relative">
+            <input
+              type="text"
+              [value]="wholesalerFilter()"
+              (input)="wholesalerFilter.set($any($event.target).value)"
+              placeholder="Buscar mayorista (Costamar, Agil, LATAM...)"
+              class="w-full h-8 px-3 rounded-[4px] border bg-white text-xs text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+              [class.border-rose-400]="form.get('wholesalerId')?.invalid && form.get('wholesalerId')?.touched"
+              [class.border-slate-300]="!(form.get('wholesalerId')?.invalid && form.get('wholesalerId')?.touched)"
+            />
+
+            <!-- Catalogo desplegable filtrable -->
+            @if (filteredWholesalers().length > 0 && !selectedWholesaler()) {
+              <div class="absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto divide-y divide-slate-100">
+                @for (w of filteredWholesalers(); track w.id) {
+                  <button
+                    type="button"
+                    (click)="selectWholesaler(w)"
+                    class="w-full px-3 py-2 text-left hover:bg-slate-50 transition flex items-center justify-between text-xs cursor-pointer"
+                  >
+                    <div>
+                      <span class="font-bold text-slate-900">{{ w.name }}</span>
+                      <span class="ml-2 text-[10px] text-slate-400 font-mono">{{ w.code }}</span>
+                    </div>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                          [class.bg-sky-100]="w.category === 'CONSOLIDADORA'"
+                          [class.text-sky-800]="w.category === 'CONSOLIDADORA'"
+                          [class.bg-purple-100]="w.category === 'AEROLINEA'"
+                          [class.text-purple-800]="w.category === 'AEROLINEA'">
+                      {{ w.category }}
+                    </span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          @if (form.get('wholesalerId')?.invalid && form.get('wholesalerId')?.touched) {
+            <p class="text-[11px] text-rose-600 font-medium mt-1">Selecciona la consolidadora mayorista responsable.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Importe y Moneda -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Monto Total *</label>
+          <input
+            type="number"
+            formControlName="totalAmount"
+            step="0.01"
+            min="0.01"
+            class="w-full h-8 px-3 rounded-[4px] border font-mono font-semibold text-slate-900 bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+            [class.border-rose-400]="form.get('totalAmount')?.invalid && form.get('totalAmount')?.touched"
+            [class.border-slate-300]="!(form.get('totalAmount')?.invalid && form.get('totalAmount')?.touched)"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Moneda *</label>
+          <select
+            formControlName="currency"
+            class="w-full h-8 px-3 rounded-[4px] border bg-white text-xs text-slate-800 font-semibold focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          >
+            <option value="USD">USD (Dólares)</option>
+            <option value="PEN">PEN (Soles)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Tipo de Servicio</label>
+          <select
+            formControlName="serviceType"
+            class="w-full h-8 px-3 rounded-[4px] border bg-white text-xs text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          >
+            <option value="FLIGHT">Vuelo / Reserva Aérea</option>
+            <option value="PACKAGE">Paquete Turístico</option>
+            <option value="OTHER">Otro Servicio</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCION 3: Datos de Ruta e Itinerario -->
+    <div class="p-4 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-4">
+      <h3 class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+        3. Ruta e Itinerario de Vuelo
+      </h3>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Origen *</label>
+          <input
+            type="text"
+            formControlName="origin"
+            placeholder="EJ: TRU"
+            class="w-full h-8 px-3 rounded-[4px] border font-mono uppercase bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Destino *</label>
+          <input
+            type="text"
+            formControlName="destination"
+            placeholder="EJ: LIM"
+            class="w-full h-8 px-3 rounded-[4px] border font-mono uppercase bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Fecha Salida *</label>
+          <input
+            type="date"
+            formControlName="departureDate"
+            class="w-full h-8 px-3 rounded-[4px] border bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Fecha Retorno</label>
+          <input
+            type="date"
+            formControlName="returnDate"
+            class="w-full h-8 px-3 rounded-[4px] border bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Aerolinea Operadora</label>
+          <input
+            type="text"
+            formControlName="airline"
+            placeholder="EJ: LATAM Airlines"
+            class="w-full h-8 px-3 rounded-[4px] border bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Numero de Vuelo</label>
+          <input
+            type="text"
+            formControlName="flightNumber"
+            placeholder="EJ: LA2234"
+            class="w-full h-8 px-3 rounded-[4px] border font-mono uppercase bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCION 4: Pasajeros Asociados -->
+    <div class="p-4 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+          4. Pasajeros de la Reserva (Requerido para confirmar)
+        </h3>
+        <button
+          type="button"
+          (click)="addPassenger()"
+          class="h-7 px-2.5 rounded-[4px] bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-[11px] transition cursor-pointer flex items-center gap-1"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Agregar Pasajero
+        </button>
+      </div>
+
+      <div formArrayName="passengers" class="space-y-3">
+        @for (passengerGroup of passengersArray.controls; track $index) {
+          <div [formGroupName]="$index" class="p-3 bg-white rounded border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between text-[11px] font-bold text-slate-600">
+              <span>Pasajero #{{ $index + 1 }}</span>
+              @if (passengersArray.length > 1) {
+                <button
+                  type="button"
+                  (click)="removePassenger($index)"
+                  class="text-rose-600 hover:text-rose-800 text-[11px] font-semibold cursor-pointer"
+                >
+                  Eliminar
+                </button>
+              }
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-500 mb-0.5">Tipo Doc *</label>
+                <select
+                  formControlName="documentType"
+                  class="w-full h-7 px-2 rounded border border-slate-300 text-xs bg-white"
+                >
+                  <option value="DNI">DNI</option>
+                  <option value="PASAPORTE">Pasaporte</option>
+                  <option value="CE">Carnet Ext.</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 mb-0.5">Numero Doc *</label>
+                <input
+                  type="text"
+                  formControlName="documentNumber"
+                  placeholder="Numero"
+                  class="w-full h-7 px-2 rounded border border-slate-300 font-mono text-xs bg-white"
+                />
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 mb-0.5">Nombres *</label>
+                <input
+                  type="text"
+                  formControlName="firstName"
+                  placeholder="Nombres"
+                  class="w-full h-7 px-2 rounded border border-slate-300 text-xs bg-white"
+                />
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 mb-0.5">Apellidos *</label>
+                <input
+                  type="text"
+                  formControlName="lastName"
+                  placeholder="Apellidos"
+                  class="w-full h-7 px-2 rounded border border-slate-300 text-xs bg-white"
+                />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- SECCION 5: Observaciones -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        Observaciones o Notas de Emision
+      </label>
+      <textarea
+        formControlName="notes"
+        rows="2"
+        placeholder="Equipaje incluido, restricciones tarifarias, codigo de reserva mayorista..."
+        class="w-full p-2.5 rounded-[4px] border border-slate-300 bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+      ></textarea>
+    </div>
+
+    <!-- Botonera de Envio / Acciones -->
+    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+      <button
+        type="button"
+        (click)="onCancel()"
+        [disabled]="isSubmitting()"
+        class="h-8 px-4 rounded-[4px] border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="submit"
+        [disabled]="isSubmitting() || form.invalid"
+        class="h-8 px-5 rounded-[4px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-2"
+      >
+        @if (isSubmitting()) {
+          <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          Registrando PNR...
+        } @else {
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Registrar Reserva Aerea
+        }
+      </button>
+    </div>
+  </form>
+</div>

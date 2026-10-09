@@ -114,4 +114,11 @@ describe('BookingService', () => {
       booking: { id: 'uuid-booking-1', status: 'CONFIRMED' }
     });
   });
+
+  it('debe devolver el catalogo de consolidadoras mayoristas y aerolineas', () => {
+    const wholesalers = service.getWholesalers();
+    expect(wholesalers.length).toBeGreaterThanOrEqual(5);
+    expect(wholesalers.some((w) => w.code === 'COSTAMAR')).toBe(true);
+    expect(wholesalers.some((w) => w.code === 'LATAM')).toBe(true);
+  });
 });
