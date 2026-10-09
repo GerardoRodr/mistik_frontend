@@ -155,7 +155,7 @@ export class BookingCreateComponent implements OnInit {
     }
   }
 
-  // Conversion automatica a mayusculas en tiempo real para el codigo PNR (WBS 6.1.1.1)
+  // Conversion automatica a mayusculas en tiempo real para el codigo PNR
   onPnrInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const upperValue = (input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -227,7 +227,7 @@ export class BookingCreateComponent implements OnInit {
     });
   }
 
-  // Seleccionar consolidadora mayorista del catalogo (WBS 6.1.1.2)
+  // Seleccionar consolidadora mayorista del catalogo
   selectWholesaler(wholesaler: Wholesaler): void {
     this.selectedWholesaler.set(wholesaler);
     const isAirline = wholesaler.type === 'AIRLINE' || wholesaler.category === 'AEROLINEA';

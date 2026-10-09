@@ -68,7 +68,7 @@ describe('BookingCreateComponent', () => {
     expect(component.passengersArray.length).toBe(1);
   });
 
-  it('debe validar estrictamente que el PNR tenga exactamente 6 caracteres (WBS 6.1.1.1)', () => {
+  it('debe validar estrictamente que el PNR tenga exactamente 6 caracteres', () => {
     const pnrControl = component.form.get('pnr');
     expect(pnrControl?.valid).toBe(false);
 
@@ -85,7 +85,7 @@ describe('BookingCreateComponent', () => {
     expect(pnrControl?.valid).toBe(true);
   });
 
-  it('debe convertir a mayusculas el valor de entrada en onPnrInput (WBS 6.1.1.1)', () => {
+  it('debe convertir a mayusculas el valor de entrada en onPnrInput', () => {
     const fakeEvent = {
       target: { value: 'lim456' }
     } as unknown as Event;
@@ -94,7 +94,7 @@ describe('BookingCreateComponent', () => {
     expect(component.form.get('pnr')?.value).toBe('LIM456');
   });
 
-  it('debe cargar el catalogo de mayoristas y permitir seleccionar una consolidadora (WBS 6.1.1.2)', () => {
+  it('debe cargar el catalogo de mayoristas y permitir seleccionar una consolidadora', () => {
     expect(component.wholesalers().length).toBeGreaterThanOrEqual(5);
 
     const costamar = component.wholesalers().find((w) => w.code === 'COSTAMAR')!;

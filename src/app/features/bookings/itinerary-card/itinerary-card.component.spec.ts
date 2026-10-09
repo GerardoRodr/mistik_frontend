@@ -58,7 +58,7 @@ describe('ItineraryCardComponent', () => {
     fixture.detectChanges();
   });
 
-  it('debe renderizar el codigo PNR y el tramo de vuelo (WBS 6.1.1.3)', () => {
+  it('debe renderizar el codigo PNR y el tramo de vuelo', () => {
     expect(component.displayPnr()).toBe('TRU123');
     expect(component.getStatusLabel(mockBooking.status)).toBe('PENDIENTE');
   });

@@ -60,7 +60,7 @@ export class CustomerListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Busqueda reactiva con debounce de 350ms segun WBS 4.1.1.3
+    // Busqueda reactiva con debounce de 350ms
     this.searchSubject
       .pipe(
         debounceTime(350),
@@ -140,7 +140,7 @@ export class CustomerListComponent implements OnInit {
     this.loadCustomers();
   }
 
-  // Abrir modal de nuevo cliente con mascaras WBS 4.1.1.1
+  // Abrir modal de nuevo cliente con mascaras
   openCreateModal(): void {
     this.showCreateModal.set(true);
   }
@@ -162,7 +162,7 @@ export class CustomerListComponent implements OnInit {
     }, 6000);
   }
 
-  // Navegar a la pantalla de Expediente 360 grados WBS 4.1.1.2
+  // Navegar a la pantalla de Expediente 360 grados
   viewCustomerDetail(id: string): void {
     this.router.navigate(['/crm/customers', id]);
   }
