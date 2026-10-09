@@ -15,9 +15,15 @@ export interface Wholesaler {
   id: string;
   code: string;
   name: string;
-  category: 'CONSOLIDADORA' | 'AEROLINEA';
-  description?: string;
+  type?: 'WHOLESALER' | 'AIRLINE' | string;
+  category?: 'CONSOLIDADORA' | 'AEROLINEA';
+  ruc?: string;
+  contactEmail?: string;
   contactPhone?: string;
+  description?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Pasajero asociado a la reserva
@@ -44,6 +50,7 @@ export interface Booking {
   currency: Currency;
   wholesalerId?: string;
   wholesalerName?: string;
+  wholesaler?: Wholesaler;
   origin?: string;
   destination?: string;
   departureDate?: string | null;

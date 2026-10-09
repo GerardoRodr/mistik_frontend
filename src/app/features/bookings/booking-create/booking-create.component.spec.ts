@@ -7,13 +7,23 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BookingCreateComponent } from './booking-create.component';
 import { BookingService } from '../../../core/services/booking.service';
 import { CustomerService } from '../../../core/services/customer.service';
-import { Booking } from '../../../core/models/booking.models';
+import { Booking, Wholesaler } from '../../../core/models/booking.models';
 
 describe('BookingCreateComponent', () => {
   let component: BookingCreateComponent;
   let fixture: ComponentFixture<BookingCreateComponent>;
   let bookingService: BookingService;
   let customerService: CustomerService;
+
+  const mockWholesalers: Wholesaler[] = [
+    { id: 'wh-costamar', code: 'COSTAMAR', name: 'Costamar Travel', type: 'WHOLESALER', category: 'CONSOLIDADORA' },
+    { id: 'wh-agil', code: 'AGIL', name: 'Agil Operador Mayorista', type: 'WHOLESALER', category: 'CONSOLIDADORA' },
+    { id: 'wh-euroamerican', code: 'EUROAMERICAN', name: 'Euroamerican Assistance', type: 'WHOLESALER', category: 'CONSOLIDADORA' },
+    { id: 'wh-ctm', code: 'CTM', name: 'CTM Tours', type: 'WHOLESALER', category: 'CONSOLIDADORA' },
+    { id: 'wh-latam', code: 'LATAM', name: 'LATAM Airlines Group', type: 'AIRLINE', category: 'AEROLINEA' },
+    { id: 'wh-copa', code: 'COPA', name: 'Copa Airlines', type: 'AIRLINE', category: 'AEROLINEA' },
+    { id: 'wh-avianca', code: 'AVIANCA', name: 'Avianca', type: 'AIRLINE', category: 'AEROLINEA' }
+  ];
 
   const mockBooking: Booking = {
     id: 'booking-uuid-1',
@@ -45,6 +55,7 @@ describe('BookingCreateComponent', () => {
   });
 
   beforeEach(() => {
+    vi.spyOn(bookingService, 'getWholesalers').mockReturnValue(of(mockWholesalers));
     fixture = TestBed.createComponent(BookingCreateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

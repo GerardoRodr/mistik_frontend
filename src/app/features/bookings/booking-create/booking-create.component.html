@@ -146,12 +146,12 @@
                       <span class="font-bold text-slate-900">{{ w.name }}</span>
                       <span class="ml-2 text-[10px] text-slate-400 font-mono">{{ w.code }}</span>
                     </div>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold"
-                          [class.bg-sky-100]="w.category === 'CONSOLIDADORA'"
-                          [class.text-sky-800]="w.category === 'CONSOLIDADORA'"
-                          [class.bg-purple-100]="w.category === 'AEROLINEA'"
-                          [class.text-purple-800]="w.category === 'AEROLINEA'">
-                      {{ w.category }}
+                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase"
+                          [class.bg-sky-100]="w.type === 'WHOLESALER' || w.category === 'CONSOLIDADORA'"
+                          [class.text-sky-800]="w.type === 'WHOLESALER' || w.category === 'CONSOLIDADORA'"
+                          [class.bg-purple-100]="w.type === 'AIRLINE' || w.category === 'AEROLINEA'"
+                          [class.text-purple-800]="w.type === 'AIRLINE' || w.category === 'AEROLINEA'">
+                      {{ (w.type === 'AIRLINE' || w.category === 'AEROLINEA') ? 'Aerolinea' : 'Consolidadora' }}
                     </span>
                   </button>
                 }

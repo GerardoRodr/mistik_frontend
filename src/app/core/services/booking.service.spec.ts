@@ -115,10 +115,40 @@ describe('BookingService', () => {
     });
   });
 
-  it('debe devolver el catalogo de consolidadoras mayoristas y aerolineas', () => {
-    const wholesalers = service.getWholesalers();
-    expect(wholesalers.length).toBeGreaterThanOrEqual(5);
-    expect(wholesalers.some((w) => w.code === 'COSTAMAR')).toBe(true);
-    expect(wholesalers.some((w) => w.code === 'LATAM')).toBe(true);
+  it('debe devolver el catalogo de consolidadoras mayoristas y aerolineas consumiendo /api/v1/wholesalers', () => {
+    service.getWholesalers().subscribe((wholesalers) => {
+      expect(wholesalers.length).toBe(1);
+      expect(wholesalers[0].code).toBe('COSTAMAR');
+    });
+
+    const req = httpMock.expectOne((r) =>
+      r.url === `${environment.apiUrl}/api/v1/wholesalers` &&
+      r.params.get('active') === 'true'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush([
+      { id: 'wh-1', code: 'COSTAMAR', name: 'Costamar Travel', type: 'WHOLESALER', isActive: true }
+    ]);
+  });
+
+  it('debe recurrir al catalogo offline si la peticion HTTP a /api/v1/wholesalers falla', () => {
+    service.getWholesalers().subscribe((wholesalers) => {
+      expect(wholesalers.length).toBeGreaterThanOrEqual(5);
+      expect(wholesalers.some((w) => w.code === 'COSTAMAR')).toBe(true);
+    });
+
+    const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/api/v1/wholesalers`);
+    req.error(new ProgressEvent('Network error'));
+  });
+
+  it('debe consultar consolidadora individual por ID en getWholesalerById', () => {
+    service.getWholesalerById('wh-uuid-1').subscribe((wholesaler) => {
+      expect(wholesaler.id).toBe('wh-uuid-1');
+      expect(wholesaler.name).toBe('Costamar Travel');
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/wholesalers/wh-uuid-1`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ id: 'wh-uuid-1', code: 'COSTAMAR', name: 'Costamar Travel' });
   });
 });
