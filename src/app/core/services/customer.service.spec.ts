@@ -58,4 +58,44 @@ describe('CustomerService', () => {
     expect(req.request.body).toEqual(newCustomer);
     req.flush({ id: 'uuid-1', ...newCustomer, createdAt: '', updatedAt: '' });
   });
+
+  it('debe normalizar bookingCode y aplanar colecciones relacionales en getCustomerById', () => {
+    const rawBackendCustomer = {
+      id: 'uuid-1',
+      documentType: 'DNI',
+      documentNumber: '74859612',
+      firstName: 'Lucia',
+      lastName: 'Mendez',
+      createdAt: '',
+      updatedAt: '',
+      bookings: [
+        {
+          id: 'b-1',
+          bookingCode: 'RES-1001',
+          serviceType: 'FLIGHT',
+          status: 'CONFIRMED',
+          totalAmount: 500,
+          currency: 'USD',
+          passengers: [{ id: 'p-1', firstName: 'Juan', lastName: 'Perez', documentType: 'DNI', documentNumber: '11223344' }],
+          payments: [{ id: 'pay-1', amount: 500, currency: 'USD', paymentMethod: 'TRANSFER', operationNumber: 'OP-999', status: 'PAID', paidAt: '2026-09-26' }],
+          visaProcesses: [{ id: 'v-1', currentStep: 'FORM_FILLING', country: 'EE.UU.' }],
+          tasks: [{ id: 't-1', title: 'Emitir ticket', status: 'PENDING', priority: 'HIGH' }]
+        }
+      ]
+    };
+
+    service.getCustomerById('uuid-1').subscribe((detail) => {
+      expect(detail.bookings?.[0].bookingCode).toBe('RES-1001');
+      expect(detail.bookings?.[0].code).toBe('RES-1001');
+      expect(detail.payments?.length).toBe(1);
+      expect(detail.payments?.[0].transactionRef).toBe('OP-999');
+      expect(detail.visaProcesses?.length).toBe(1);
+      expect(detail.serviceTasks?.length).toBe(1);
+      expect(detail.passengers?.length).toBe(1);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/customers/uuid-1`);
+    expect(req.request.method).toBe('GET');
+    req.flush(rawBackendCustomer);
+  });
 });
