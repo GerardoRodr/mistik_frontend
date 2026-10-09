@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Customer, CustomerDetail } from '../../../core/models/customer.models';
 import { CustomerFormComponent } from '../customer-form/customer-form.component';
+import { BookingCreateComponent } from '../../bookings/booking-create/booking-create.component';
 
 export type CustomerDetailTab =
   | 'overview'
@@ -17,7 +18,7 @@ export type CustomerDetailTab =
 @Component({
   selector: 'app-customer-detail',
   standalone: true,
-  imports: [CommonModule, CustomerFormComponent],
+  imports: [CommonModule, CustomerFormComponent, BookingCreateComponent],
   templateUrl: './customer-detail.component.html'
 })
 export class CustomerDetailComponent implements OnInit {
@@ -31,6 +32,7 @@ export class CustomerDetailComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly activeTab = signal<CustomerDetailTab>('overview');
   readonly showEditModal = signal<boolean>(false);
+  readonly showCreateBookingModal = signal<boolean>(false);
   readonly updateSuccessMessage = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -79,6 +81,26 @@ export class CustomerDetailComponent implements OnInit {
   // Cerrar modal de edicion
   closeEditModal(): void {
     this.showEditModal.set(false);
+  }
+
+  // Abrir modal de creacion de reserva para este cliente
+  openCreateBookingModal(): void {
+    this.showCreateBookingModal.set(true);
+  }
+
+  // Cerrar modal de creacion de reserva
+  closeCreateBookingModal(): void {
+    this.showCreateBookingModal.set(false);
+  }
+
+  // Callback cuando se registra una nueva reserva para este cliente
+  onBookingCreated(): void {
+    this.closeCreateBookingModal();
+    this.updateSuccessMessage.set('Reserva aerea registrada exitosamente para este cliente.');
+    const id = this.customer()?.id;
+    if (id) {
+      this.loadCustomerDetail(id);
+    }
   }
 
   // Callback cuando el cliente ha sido actualizado con exito

@@ -370,6 +370,20 @@
 
         <!-- PESTAÑA: Reservas Aereas -->
         @if (activeTab() === 'bookings') {
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-bold text-slate-800 text-xs">Historial de Expedientes PNR</span>
+            <button
+              type="button"
+              (click)="openCreateBookingModal()"
+              class="h-7 px-2.5 rounded-[4px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold text-[11px] transition cursor-pointer flex items-center gap-1"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Emitir Reserva para este Cliente</span>
+            </button>
+          </div>
+
           @if (c.bookings && c.bookings.length > 0) {
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-xs">
@@ -385,7 +399,7 @@
                 <tbody class="divide-y divide-slate-100">
                   @for (booking of c.bookings; track booking.id) {
                     <tr class="h-9 hover:bg-slate-50">
-                      <td class="py-2 px-3 font-mono font-bold text-slate-900">{{ booking.code }}</td>
+                      <td class="py-2 px-3 font-mono font-bold text-slate-900">{{ booking.bookingCode || booking.code }}</td>
                       <td class="py-2 px-3">{{ booking.serviceType }}</td>
                       <td class="py-2 px-3">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800">
@@ -405,7 +419,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
               <p class="text-xs font-semibold text-slate-600">No hay reservas aéreas emitidas para este cliente.</p>
-              <p class="text-[11px] text-slate-400">Las reservas registradas en la Semana 8 aparecerán automáticamente aquí.</p>
+              <p class="text-[11px] text-slate-400">Las reservas registradas aparecerán automáticamente aquí.</p>
             </div>
           }
         }
@@ -432,7 +446,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p class="text-xs font-semibold text-slate-600">No hay procesos de visa activos.</p>
-              <p class="text-[11px] text-slate-400">Los trámites DS-160 programados en la Semana 9 se sincronizarán en este panel.</p>
+              <p class="text-[11px] text-slate-400">Los expedientes y trámites de visa registrados aparecerán en este panel.</p>
             </div>
           }
         }
@@ -542,7 +556,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
               <p class="text-xs font-semibold text-slate-600">No hay tareas pendientes asignadas a este cliente.</p>
-              <p class="text-[11px] text-slate-400">Las tarjetas del Tablero Kanban (Semana 10) se integrarán en esta bandeja.</p>
+              <p class="text-[11px] text-slate-400">Las tareas y gestiones operativas asignadas aparecerán en esta bandeja.</p>
             </div>
           }
         }
@@ -578,6 +592,38 @@
         (saved)="onCustomerUpdated($event)"
         (cancelled)="closeEditModal()"
       />
+    </div>
+  </div>
+}
+
+<!-- Modal de Emision de Reserva para este Cliente -->
+@if (showCreateBookingModal() && customer()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs animate-fadeIn">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 z-10 px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-[#F8FAFC]">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">Nueva Reserva Aérea PNR</h2>
+          <p class="text-[11px] text-slate-500 font-mono">
+            Titular: {{ customer()?.firstName }} {{ customer()?.lastName }} ({{ customer()?.documentNumber }})
+          </p>
+        </div>
+        <button
+          (click)="closeCreateBookingModal()"
+          class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <app-booking-create
+          [preselectedCustomerId]="customer()?.id"
+          [isModal]="true"
+          (saved)="onBookingCreated()"
+          (cancelled)="closeCreateBookingModal()"
+        />
+      </div>
     </div>
   </div>
 }

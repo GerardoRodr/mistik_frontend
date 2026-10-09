@@ -1,0 +1,240 @@
+<div class="space-y-5">
+  <!-- Encabezado del Modulo -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border border-slate-200 shadow-2xs">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-base font-bold text-slate-900 tracking-tight">
+          Gestión de Reservas Aéreas y Emisiones PNR
+        </h1>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-[#E11D48] border border-rose-200 font-mono">
+          Emisiones PNR
+        </span>
+      </div>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Emisión con validación PNR de 6 caracteres, catálogo de mayoristas y máquina de estados de vuelos
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="openCreateModal()"
+      class="h-8 px-4 rounded-[4px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shrink-0"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>Nueva Reserva Aérea</span>
+    </button>
+  </div>
+
+  <!-- Notificaciones de Exito o Error -->
+  @if (successMessage()) {
+    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between animate-fadeIn">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>{{ successMessage() }}</span>
+      </div>
+      <button (click)="successMessage.set(null)" class="text-emerald-600 hover:text-emerald-800 cursor-pointer">
+        ✕
+      </button>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between animate-fadeIn">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+      <button (click)="loadBookings()" class="underline text-rose-700 hover:text-rose-900 cursor-pointer ml-3">
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Metricas KPI de Reservas (5 Tarjetas Compactas) -->
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+      <span class="text-[10px] font-bold uppercase text-slate-500">Total Expedientes</span>
+      <div class="text-lg font-extrabold text-slate-900 mt-0.5 font-mono">{{ totalCount() }}</div>
+    </div>
+    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+      <span class="text-[10px] font-bold uppercase text-amber-600">Pendientes</span>
+      <div class="text-lg font-extrabold text-amber-700 mt-0.5 font-mono">{{ pendingCount() }}</div>
+    </div>
+    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+      <span class="text-[10px] font-bold uppercase text-sky-600">Confirmadas</span>
+      <div class="text-lg font-extrabold text-sky-700 mt-0.5 font-mono">{{ confirmedCount() }}</div>
+    </div>
+    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+      <span class="text-[10px] font-bold uppercase text-purple-600">En Proceso / Boletos</span>
+      <div class="text-lg font-extrabold text-purple-700 mt-0.5 font-mono">{{ inProcessCount() }}</div>
+    </div>
+    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+      <span class="text-[10px] font-bold uppercase text-rose-600">Anuladas</span>
+      <div class="text-lg font-extrabold text-rose-700 mt-0.5 font-mono">{{ cancelledCount() }}</div>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros y Busqueda Reactiva -->
+  <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+    <!-- Buscador en tiempo real por PNR, Codigo o Pasajero -->
+    <div class="relative flex-1">
+      <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </span>
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        placeholder="Buscar por PNR (ej. LIM456), titular o código de reserva..."
+        class="w-full h-8 pl-8 pr-3 rounded-[4px] border border-slate-300 bg-white text-xs text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
+      />
+    </div>
+
+    <!-- Filtros de Pestañas por Estado -->
+    <div class="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0">
+      <button
+        type="button"
+        (click)="setStatusFilter('ALL')"
+        class="h-7 px-2.5 rounded-[4px] text-[11px] font-semibold transition cursor-pointer whitespace-nowrap"
+        [class.bg-slate-900]="selectedStatus() === 'ALL'"
+        [class.text-white]="selectedStatus() === 'ALL'"
+        [class.bg-slate-100]="selectedStatus() !== 'ALL'"
+        [class.text-slate-600]="selectedStatus() !== 'ALL'"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        (click)="setStatusFilter('PENDING')"
+        class="h-7 px-2.5 rounded-[4px] text-[11px] font-semibold transition cursor-pointer whitespace-nowrap"
+        [class.bg-amber-600]="selectedStatus() === 'PENDING'"
+        [class.text-white]="selectedStatus() === 'PENDING'"
+        [class.bg-slate-100]="selectedStatus() !== 'PENDING'"
+        [class.text-slate-600]="selectedStatus() !== 'PENDING'"
+      >
+        Pendientes
+      </button>
+      <button
+        type="button"
+        (click)="setStatusFilter('CONFIRMED')"
+        class="h-7 px-2.5 rounded-[4px] text-[11px] font-semibold transition cursor-pointer whitespace-nowrap"
+        [class.bg-sky-600]="selectedStatus() === 'CONFIRMED'"
+        [class.text-white]="selectedStatus() === 'CONFIRMED'"
+        [class.bg-slate-100]="selectedStatus() !== 'CONFIRMED'"
+        [class.text-slate-600]="selectedStatus() !== 'CONFIRMED'"
+      >
+        Confirmadas
+      </button>
+      <button
+        type="button"
+        (click)="setStatusFilter('IN_PROCESS')"
+        class="h-7 px-2.5 rounded-[4px] text-[11px] font-semibold transition cursor-pointer whitespace-nowrap"
+        [class.bg-purple-600]="selectedStatus() === 'IN_PROCESS'"
+        [class.text-white]="selectedStatus() === 'IN_PROCESS'"
+        [class.bg-slate-100]="selectedStatus() !== 'IN_PROCESS'"
+        [class.text-slate-600]="selectedStatus() !== 'IN_PROCESS'"
+      >
+        En Proceso
+      </button>
+      <button
+        type="button"
+        (click)="setStatusFilter('CANCELLED')"
+        class="h-7 px-2.5 rounded-[4px] text-[11px] font-semibold transition cursor-pointer whitespace-nowrap"
+        [class.bg-rose-600]="selectedStatus() === 'CANCELLED'"
+        [class.text-white]="selectedStatus() === 'CANCELLED'"
+        [class.bg-slate-100]="selectedStatus() !== 'CANCELLED'"
+        [class.text-slate-600]="selectedStatus() !== 'CANCELLED'"
+      >
+        Anuladas
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido: Cuadricula de Tarjetas de Itinerario -->
+  @if (isLoading()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <div class="bg-white rounded-lg border border-slate-200 p-4 space-y-3 animate-pulse">
+          <div class="flex justify-between items-center">
+            <div class="h-4 bg-slate-200 rounded w-20"></div>
+            <div class="h-4 bg-slate-200 rounded w-16"></div>
+          </div>
+          <div class="h-10 bg-slate-100 rounded"></div>
+          <div class="h-4 bg-slate-100 rounded w-3/4"></div>
+          <div class="h-6 bg-slate-200 rounded w-1/2"></div>
+        </div>
+      }
+    </div>
+  } @else if (filteredBookings().length > 0) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      @for (booking of filteredBookings(); track booking.id) {
+        <app-itinerary-card
+          [booking]="booking"
+          (statusChanged)="onBookingStatusChanged($event)"
+        />
+      }
+    </div>
+  } @else {
+    <!-- Estado Vacio -->
+    <div class="bg-white rounded-lg border border-slate-200 p-12 text-center space-y-3 shadow-2xs">
+      <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-slate-900">No se encontraron reservas aéreas</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+          No hay expedientes que coincidan con el término de búsqueda o filtro seleccionado.
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="openCreateModal()"
+        class="h-8 px-4 rounded-[4px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold text-xs transition cursor-pointer"
+      >
+        Registrar Nueva Reserva
+      </button>
+    </div>
+  }
+</div>
+
+<!-- Modal de Emision de Reserva Aerea -->
+@if (showCreateModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs animate-fadeIn" (click)="closeCreateModal()">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modal" (click)="$event.stopPropagation()">
+      <!-- Encabezado del Modal -->
+      <div class="sticky top-0 z-10 px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-[#F8FAFC]">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">Nueva Reserva Aérea y Emisión PNR</h2>
+          <p class="text-[11px] text-slate-500">Formulario oficial de emision y registro de vuelo</p>
+        </div>
+        <button
+          (click)="closeCreateModal()"
+          class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Cuerpo del Formulario -->
+      <div class="p-6">
+        <app-booking-create
+          [isModal]="true"
+          (saved)="onBookingSaved($event)"
+          (cancelled)="closeCreateModal()"
+        />
+      </div>
+    </div>
+  </div>
+}

@@ -15,15 +15,20 @@ export interface Customer {
 // Entidad de reserva vinculada al expediente
 export interface CustomerBooking {
   id: string;
-  code: string;
+  bookingCode: string;
+  code?: string;
   serviceType: string;
   status: string;
-  totalAmount: number;
+  totalAmount: number | string;
   currency: string;
   travelDate?: string | null;
   returnDate?: string | null;
   notes?: string | null;
   createdAt?: string;
+  passengers?: CustomerPassenger[];
+  payments?: CustomerPayment[];
+  visaProcesses?: CustomerVisaProcess[];
+  tasks?: CustomerServiceTask[];
 }
 
 // Entidad de pasajero vinculada al expediente
@@ -35,15 +40,20 @@ export interface CustomerPassenger {
   documentNumber: string;
   birthDate?: string | null;
   nationality?: string | null;
+  pnr?: string | null;
+  ticketNumber?: string | null;
 }
 
 // Entidad de pago vinculada al expediente
 export interface CustomerPayment {
   id: string;
-  amount: number;
+  amount: number | string;
   currency: string;
   paymentMethod: string;
   transactionRef?: string | null;
+  operationNumber?: string | null;
+  bankName?: string | null;
+  driveProofUrl?: string | null;
   status: string;
   paidAt: string;
 }
@@ -62,10 +72,16 @@ export interface CustomerServiceTask {
 // Entidad de tramite consular de visa vinculada al expediente
 export interface CustomerVisaProcess {
   id: string;
-  country: string;
-  visaType: string;
-  status: string;
+  country?: string | null;
+  visaType?: string | null;
+  status?: string | null;
+  currentStep?: string | null;
+  confirmationCode?: string | null;
+  consularFeePaid?: boolean;
+  consularFeeAmount?: number | string | null;
   appointmentDate?: string | null;
+  casDate?: string | null;
+  embassyDate?: string | null;
   submissionDate?: string | null;
   resolutionDate?: string | null;
   notes?: string | null;
