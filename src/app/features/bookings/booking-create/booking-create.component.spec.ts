@@ -138,7 +138,22 @@ describe('BookingCreateComponent', () => {
 
     component.onSubmit();
 
-    expect(bookingService.createBooking).toHaveBeenCalled();
+    expect(bookingService.createBooking).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerId: 'cust-uuid-1',
+        pnr: 'LIM456',
+        wholesalerId: 'wh-costamar',
+        notes: expect.stringContaining('Ruta: TRU -> LIM | Salida: 2026-11-01')
+      })
+    );
+
+    const sentPayload = vi.mocked(bookingService.createBooking).mock.calls[0][0] as any;
+    expect(sentPayload.origin).toBeUndefined();
+    expect(sentPayload.destination).toBeUndefined();
+    expect(sentPayload.departureDate).toBeUndefined();
+    expect(sentPayload.airline).toBeUndefined();
+    expect(sentPayload.wholesalerName).toBeUndefined();
+
     expect(savedSpy).toHaveBeenCalledWith(mockBooking);
     expect(component.isSubmitting()).toBe(false);
   });

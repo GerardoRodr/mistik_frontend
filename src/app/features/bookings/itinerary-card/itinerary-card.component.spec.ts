@@ -113,4 +113,25 @@ describe('ItineraryCardComponent', () => {
     expect(statusChangedSpy).toHaveBeenCalled();
     expect(component.showTransitionModal()).toBe(false);
   });
+
+  it('debe recuperar ruta y fechas desde el campo notes si no estan en la raiz', () => {
+    const bookingWithNotes: Booking = {
+      ...mockBooking,
+      origin: undefined,
+      destination: undefined,
+      departureDate: undefined,
+      airline: undefined,
+      wholesalerName: undefined,
+      notes: 'Ruta: CUZ -> LIM | Salida: 2026-12-01 | Aerolinea: LATAM Airlines | Vuelo: LA2030. Observaciones: Asiento ventana'
+    };
+
+    fixture.componentRef.setInput('booking', bookingWithNotes);
+    fixture.detectChanges();
+
+    expect(component.displayOrigin()).toBe('CUZ');
+    expect(component.displayDestination()).toBe('LIM');
+    expect(component.displayDepartureDate()).toBe('2026-12-01');
+    expect(component.displayAirline()).toBe('LATAM Airlines');
+    expect(component.displayNotes()).toBe('Asiento ventana');
+  });
 });

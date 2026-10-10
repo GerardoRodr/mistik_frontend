@@ -48,6 +48,62 @@ export class ItineraryCardComponent implements OnInit {
     return b.pnr || (b as any).passengers?.[0]?.pnr || b.bookingCode || 'SIN-PNR';
   });
 
+  // Origen de vuelo recuperado de la reserva o parseado de notes
+  readonly displayOrigin = computed(() => {
+    const b = this.booking();
+    if (b.origin) return b.origin;
+    if (b.notes) {
+      const match = b.notes.match(/Ruta:\s*([A-Za-z]{3})\s*->/i);
+      if (match) return match[1].toUpperCase();
+    }
+    return 'TRU';
+  });
+
+  // Destino de vuelo recuperado de la reserva o parseado de notes
+  readonly displayDestination = computed(() => {
+    const b = this.booking();
+    if (b.destination) return b.destination;
+    if (b.notes) {
+      const match = b.notes.match(/->\s*([A-Za-z]{3})/i);
+      if (match) return match[1].toUpperCase();
+    }
+    return 'LIM';
+  });
+
+  // Aerolinea u operador comercial
+  readonly displayAirline = computed(() => {
+    const b = this.booking();
+    if (b.airline) return b.airline;
+    if (b.wholesaler?.name) return b.wholesaler.name;
+    if (b.wholesalerName) return b.wholesalerName;
+    if (b.notes) {
+      const match = b.notes.match(/Aerolinea:\s*([^|.]+)/i);
+      if (match) return match[1].trim();
+    }
+    return 'Vuelo Regular';
+  });
+
+  // Fecha de salida formateada o recuperada de notes
+  readonly displayDepartureDate = computed(() => {
+    const b = this.booking();
+    if (b.departureDate) return b.departureDate;
+    if (b.notes) {
+      const match = b.notes.match(/Salida:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
+      if (match) return match[1];
+    }
+    return null;
+  });
+
+  // Observaciones adicionales o notas de usuario
+  readonly displayNotes = computed(() => {
+    const notes = this.booking().notes;
+    if (!notes) return null;
+    const match = notes.match(/Observaciones:\s*(.+)$/i);
+    if (match) return match[1].trim();
+    if (!notes.includes('Ruta:')) return notes;
+    return null;
+  });
+
   ngOnInit(): void {
     // Si la reserva trae transiciones permitidas precargadas, asignarlas
     if (this.booking().allowedTransitions?.length) {

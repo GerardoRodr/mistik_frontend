@@ -79,13 +79,6 @@ export interface CreateBookingDto {
   currency?: Currency;
   pnr?: string;
   wholesalerId?: string;
-  wholesalerName?: string;
-  origin?: string;
-  destination?: string;
-  departureDate?: string;
-  returnDate?: string;
-  airline?: string;
-  flightNumber?: string;
   notes?: string;
   passengers?: BookingPassenger[];
 }
