@@ -47,6 +47,13 @@ export const routes: Routes = [
           import('./features/bookings/bookings.routes').then((m) => m.bookingsRoutes)
       },
       {
+        path: 'visas',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'SUPERVISOR', 'AGENT', 'ASESOR'] },
+        loadChildren: () =>
+          import('./features/visas/visas.routes').then((m) => m.visasRoutes)
+      },
+      {
         path: 'unauthorized',
         title: 'Acceso Denegado | Mistik Tours ERP',
         loadComponent: () =>

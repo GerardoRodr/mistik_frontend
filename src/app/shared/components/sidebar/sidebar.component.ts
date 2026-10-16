@@ -56,9 +56,7 @@ export class SidebarComponent {
         {
           label: 'Tramites de Visas',
           path: '/visas',
-          icon: 'passport',
-          badge: 'Proximo',
-          disabled: true
+          icon: 'passport'
         },
         {
           label: 'Flujo Operativo Kanban',
