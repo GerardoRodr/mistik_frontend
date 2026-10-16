@@ -1,34 +1,38 @@
-# PROMPT MAESTRO FRONTEND: EJECUCIÓN SEMANA 6 (EVALUACIÓN T1 - 30% FUNCIONAL)
+# PROMPT MAESTRO FRONTEND: EJECUCION SEMANA 9 (49.19% ACUMULADO)
 
-Actúa como un Desarrollador Frontend Senior especializado en Angular v22, Arquitectura de Standalone Components, Signals y Seguridad Web. Tu objetivo es construir la interfaz de usuario y las guardias de navegación para la Semana 6 del Proyecto Capstone (Mistik Tours & Travel S.A.C.), asegurando la integración funcional para la Evaluación T1.
-
----
-
-## 🎯 OBJETIVOS TÉCNICOS Y PAQUETES WBS A CONSTRUIR
-
-### 1. Interfaz de Inicio de Sesión / Login (WBS `5.1.1.1` / `HU-02`)
-- Crear el componente Standalone `LoginComponent` respetando la especificación de wireframes en Figma (`W-01`).
-- Implementar Formulario Reactivo (`FormBuilder`, `Validators.required`, `Validators.email`).
-- Conectar con `AuthService` para enviar credenciales al backend (`POST /api/v1/auth/login`).
-- Almacenar de forma segura el token JWT recibido y actualizar el estado global del usuario autenticado mediante **Signals** (`currentUser = signal<User | null>(null)`).
-- Diseñar estados visuales de carga (spinners), mensajes de error reactivos y estilos responsivos.
-
-### 2. Angular Guards de Protección de Rutas por Perfil (WBS `5.1.1.2`)
-- Desarrollar Functional Guards en Angular:
-  - `authGuard` (`CanActivateFn`): Verificación de presencia y validez del token JWT. Redirige a `/login` si no está autenticado.
-  - `roleGuard` (`CanActivateFn`): Verificación de roles permitidos (`ADMIN`, `SUPERVISOR`, `ASESOR`) usando `route.data['roles']`. Redirige a `/unauthorized` si el rol no coincide.
-- Configurar la tabla de rutas principal (`app.routes.ts`) protegiendo las vistas privadas (`/dashboard`, `/crm`, `/kanban`).
-
-### 3. Vista Inicial del Módulo CRM - Directorio de Clientes (WBS `4.1.1.1` / `HU-04`)
-- Crear el componente Standalone `CustomerListComponent`.
-- Conectar con `CustomerService` para consumir la API de backend (`GET /api/v1/customers`).
-- Implementar tabla reactiva de clientes con barra de búsqueda rápida (filtrado por DNI/Nombre en < 5s) e indicadores de estado.
+Actua como un Desarrollador Frontend Senior especializado en Angular v22, Standalone Components, Signals y Formularios Reactivos. Tu objetivo es construir los componentes de interfaz para tramites consulares de visa DS-160 y el calendario multianual programados en la Semana 9 del Proyecto Capstone (Mistik Tours & Travel S.A.C.).
 
 ---
 
-## 🛠️ REQUISITOS TÉCNICOS Y ESTÁNDARES
-1. **Angular 22 Modern Standalone:** Utilizar `standalone: true`, `imports: [...]`, `inject()`, `signals` y la nueva sintaxis de control de flujo (`@if`, `@for`).
-2. **HTTP Interceptors:** Implementar `authInterceptor` (`HttpInterceptorFn`) para adjuntar automáticamente el encabezado `Authorization: Bearer <token>` en cada petición HTTP hacia la API.
-3. **Manejo de UI:** Estilos limpios en CSS/Tailwind alineados al Design System de Mistik Tours.
+## OBJETIVOS TECNICOS Y PAQUETES WBS CONSTRUIDOS
 
-Genera código TypeScript, HTML y CSS estructurado, limpio y listo para conectar con el servidor backend.
+### 1. Formulario de Codigos de Confirmacion DS-160 (WBS 7.1.1.1)
+- Componente Standalone `VisaDs160FormComponent` (`src/app/features/visas/visa-ds160-form/`).
+- Formulario Reactivo con validacion estricta del codigo DS-160:
+  - Exactamente 10 caracteres alfanumericos (ej. `AA00AA00AA`).
+  - Transformacion automatica a mayusculas y feedback visual en tiempo real.
+  - Seleccion de reserva y pasajero titular.
+
+### 2. Registro de Pagos de Arancel Consular de 185 USD (WBS 7.1.1.2)
+- Modal Standalone `VisaFeePaymentComponent` (`src/app/features/visas/visa-fee-payment/`).
+- Registro del arancel de visa de $185 USD con campos:
+  - Numero de operacion bancaria / MRV Fee.
+  - Entidad bancaria (Scotiabank, BCP, BBVA, Interbank) y fecha de pago.
+  - Monto ($185 USD) y calculo referencial en PEN (~S/ 693.75).
+  - Vinculacion atomica de cita consular (Embajada EE.UU. Lima / CAS).
+- Conexion con `VisaService.scheduleAppointment()`.
+
+### 3. Calendario Operativo de Citas Consulares Multianuales (WBS 7.1.1.3)
+- Componente Standalone `VisaCalendarViewComponent` (`src/app/features/visas/visa-calendar-view/`).
+- Renderizado de agenda/calendario para citas consulares a 18 meses vista (2026-2027).
+- Tarjetas visuales enriquecidas con:
+  - Badge de estado: `REGISTRADO`, `PAGO_ARANCEL`, `CITA_PROGRAMADA`.
+  - Distincion visual entre Embajada (Entrevista) y CAS (Biometria).
+  - Contador reactivo de dias restantes.
+  - Filtros reactivos con Angular Signals por anio (2026, 2027, todos), mes, sede y busqueda en tiempo real.
+
+---
+
+## ESTADO DE VALIDACION
+- 16 suites de pruebas unitarias ejecutadas con Vitest: 64 pruebas aprobadas (100% exitosas).
+- Compilacion de produccion con Angular CLI (`ng build`): 0 errores TypeScript, empaquetado y lazy chunks generados.
