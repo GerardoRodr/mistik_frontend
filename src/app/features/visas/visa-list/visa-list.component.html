@@ -342,7 +342,7 @@
                       >
                         Agendar Cita
                       </button>
-                    } @else if (proc.currentStep === 'CITA_CONSOLIDADA') {
+                    } @else if (proc.currentStep !== 'CONCLUIDO') {
                       <button
                         type="button"
                         (click)="advanceStep(proc, 'CONCLUIDO')"
