@@ -157,4 +157,17 @@ describe('VisaListComponent', () => {
     component.closeFeeModal();
     expect(component.selectedProcessForPayment()).toBeNull();
   });
+
+  it('debe abrir, cerrar y procesar la conclusion con el modal', () => {
+    component.openConcludeModal(mockVisaProcesses[1]);
+    expect(component.selectedProcessForConclude()).toBe(mockVisaProcesses[1]);
+
+    component.closeConcludeModal();
+    expect(component.selectedProcessForConclude()).toBeNull();
+
+    component.openConcludeModal(mockVisaProcesses[1]);
+    component.onProcessConcluded();
+    expect(component.selectedProcessForConclude()).toBeNull();
+    expect(component.successMessage()).toContain('BB22334455');
+  });
 });

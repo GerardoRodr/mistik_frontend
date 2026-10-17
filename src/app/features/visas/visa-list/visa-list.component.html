@@ -345,7 +345,7 @@
                     } @else if (proc.currentStep !== 'CONCLUIDO') {
                       <button
                         type="button"
-                        (click)="advanceStep(proc, 'CONCLUIDO')"
+                        (click)="openConcludeModal(proc)"
                         class="px-2.5 py-1 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded transition"
                         title="Concluir trámite consular"
                       >
@@ -388,5 +388,14 @@
       (paymentRegistered)="onPaymentRegistered()"
       (closed)="closeFeeModal()"
     ></app-visa-fee-payment>
+  }
+
+  <!-- Modal para Conclusión de Trámite Consular -->
+  @if (selectedProcessForConclude()) {
+    <app-visa-conclude-modal
+      [visaProcess]="selectedProcessForConclude()"
+      (concluded)="onProcessConcluded()"
+      (closed)="closeConcludeModal()"
+    ></app-visa-conclude-modal>
   }
 </div>

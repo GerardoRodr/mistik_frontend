@@ -13,6 +13,7 @@ import { VisaService } from '../../../core/services/visa.service';
 import { VisaProcess, VisaStep } from '../../../core/models/visa.models';
 import { VisaDs160FormComponent } from '../visa-ds160-form/visa-ds160-form.component';
 import { VisaFeePaymentComponent } from '../visa-fee-payment/visa-fee-payment.component';
+import { VisaConcludeModalComponent } from '../visa-conclude-modal/visa-conclude-modal.component';
 
 @Component({
   selector: 'app-visa-list',
@@ -23,7 +24,8 @@ import { VisaFeePaymentComponent } from '../visa-fee-payment/visa-fee-payment.co
     RouterLink,
     DatePipe,
     VisaDs160FormComponent,
-    VisaFeePaymentComponent
+    VisaFeePaymentComponent,
+    VisaConcludeModalComponent
   ],
   templateUrl: './visa-list.component.html'
 })
@@ -39,6 +41,7 @@ export class VisaListComponent implements OnInit {
   // Modales
   readonly showDs160Modal = signal<boolean>(false);
   readonly selectedProcessForPayment = signal<VisaProcess | null>(null);
+  readonly selectedProcessForConclude = signal<VisaProcess | null>(null);
 
   // Filtros reactivos con Signals
   readonly selectedStep = signal<string>('ALL');
@@ -156,6 +159,28 @@ export class VisaListComponent implements OnInit {
     this.loadVisaProcesses();
     this.successMessage.set(
       'Pago de arancel MRV y/o cita consular registrados exitosamente.'
+    );
+    setTimeout(() => this.successMessage.set(null), 5000);
+  }
+
+  // Abrir modal de conclusion para un expediente
+  openConcludeModal(process: VisaProcess): void {
+    this.selectedProcessForConclude.set(process);
+  }
+
+  // Cerrar modal de conclusion
+  closeConcludeModal(): void {
+    this.selectedProcessForConclude.set(null);
+  }
+
+  // Callback cuando se concluye exitosamente el tramite
+  onProcessConcluded(): void {
+    const process = this.selectedProcessForConclude();
+    const code = process?.confirmationCode || '';
+    this.closeConcludeModal();
+    this.loadVisaProcesses();
+    this.successMessage.set(
+      `Expediente consular ${code} concluido exitosamente.`
     );
     setTimeout(() => this.successMessage.set(null), 5000);
   }
