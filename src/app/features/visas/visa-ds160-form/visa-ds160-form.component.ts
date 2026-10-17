@@ -67,8 +67,7 @@ export class VisaDs160FormComponent implements OnInit {
       ]
     ],
     consularFeeAmount: [185.0, [Validators.required, Validators.min(185.0)]],
-    currency: ['USD', [Validators.required]],
-    notes: ['']
+    currency: ['USD', [Validators.required]]
   });
 
   ngOnInit(): void {
@@ -154,8 +153,7 @@ export class VisaDs160FormComponent implements OnInit {
       passengerId: formValues.passengerId,
       confirmationCode: formValues.confirmationCode,
       consularFeeAmount: formValues.consularFeeAmount,
-      currency: formValues.currency,
-      notes: formValues.notes
+      currency: formValues.currency
     };
 
     this.visaService.createVisaProcess(dto).subscribe({

@@ -55,7 +55,9 @@ export class VisaService {
   // Registrar nuevo tramite consular con codigo de confirmacion DS-160
   createVisaProcess(dto: CreateVisaProcessDto): Observable<VisaProcess> {
     const payload = {
-      ...dto,
+      bookingId: dto.bookingId,
+      passengerId: dto.passengerId,
+      confirmationCode: dto.confirmationCode,
       consularFeeAmount: dto.consularFeeAmount ?? 185.0,
       currency: dto.currency ?? 'USD'
     };

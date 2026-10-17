@@ -66,7 +66,6 @@ export interface VisaProcess {
   currentStep: VisaStep;
   casDate?: string | null;
   embassyDate?: string | null;
-  notes?: string | null;
   createdAt: string;
   updatedAt: string;
   allowedTransitions?: VisaStep[];
@@ -102,7 +101,6 @@ export interface CreateVisaProcessDto {
   confirmationCode: string;
   consularFeeAmount?: number;
   currency?: string;
-  notes?: string;
 }
 
 // Carga util para transicion de fase consular en la maquina de estados
