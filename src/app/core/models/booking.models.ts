@@ -131,3 +131,58 @@ export interface PaginatedBookingsResponse {
     totalPages: number;
   };
 }
+
+
+// Metodos de pago aceptados en caja y bancos
+export type PaymentMethod =
+  | 'TRANSFERENCIA'
+  | 'TARJETA'
+  | 'YAPE_PLIN'
+  | 'DEPOSITO'
+  | 'EFECTIVO';
+
+// Estado formal de liquidacion de una reserva
+export type PaymentSettlementStatus = 'PAID' | 'PARTIAL' | 'UNPAID';
+
+// Carga util para registrar un abono financiero con enlace a Google Drive
+export interface CreatePaymentDto {
+  amount: number;
+  currency: Currency;
+  paymentMethod: PaymentMethod | string;
+  operationNumber: string;
+  bankName: string;
+  driveReceiptUrl: string;
+}
+
+// Registro individual de abono o pago
+export interface PaymentRecord {
+  id: string;
+  bookingId: string;
+  amount: number;
+  currency: Currency;
+  paymentMethod: string;
+  operationNumber: string;
+  bankName: string;
+  driveReceiptUrl: string;
+  paymentDate: string;
+  isVerified?: boolean;
+}
+
+// Balance y estado de liquidacion de una reserva
+export interface BookingBalance {
+  bookingId: string;
+  bookingCode: string;
+  totalAmount: number;
+  totalPaid: number;
+  balanceDue: number;
+  currency: Currency;
+  paymentStatus: PaymentSettlementStatus;
+  paymentsCount: number;
+  payments?: PaymentRecord[];
+}
+
+// Respuesta al registrar un pago exitoso
+export interface RegisterPaymentResponse {
+  payment: PaymentRecord;
+  balance: BookingBalance;
+}
