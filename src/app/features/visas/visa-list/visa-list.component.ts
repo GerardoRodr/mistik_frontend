@@ -13,6 +13,8 @@ import { VisaService } from '../../../core/services/visa.service';
 import { VisaProcess, VisaStep } from '../../../core/models/visa.models';
 import { VisaDs160FormComponent } from '../visa-ds160-form/visa-ds160-form.component';
 import { VisaFeePaymentComponent } from '../visa-fee-payment/visa-fee-payment.component';
+import { PassportOcrModalComponent } from '../components/passport-ocr-modal/passport-ocr-modal.component';
+import { OcrPassportResult } from '../../../core/services/ai.service';
 import { VisaConcludeModalComponent } from '../visa-conclude-modal/visa-conclude-modal.component';
 
 @Component({
@@ -25,6 +27,7 @@ import { VisaConcludeModalComponent } from '../visa-conclude-modal/visa-conclude
     DatePipe,
     VisaDs160FormComponent,
     VisaFeePaymentComponent,
+    PassportOcrModalComponent,
     VisaConcludeModalComponent
   ],
   templateUrl: './visa-list.component.html'
@@ -40,6 +43,7 @@ export class VisaListComponent implements OnInit {
 
   // Modales
   readonly showDs160Modal = signal<boolean>(false);
+  readonly showOcrModal = signal<boolean>(false);
   readonly selectedProcessForPayment = signal<VisaProcess | null>(null);
   readonly selectedProcessForConclude = signal<VisaProcess | null>(null);
 
@@ -107,7 +111,7 @@ export class VisaListComponent implements OnInit {
         this.isLoading.set(false);
         if (err.status === 0) {
           this.errorMessage.set(
-            'Sin comunicacion con el microservicio de tramites consulares.'
+            'Sin comunicación con el microservicio de trámites consulares.'
           );
         } else {
           this.errorMessage.set(
@@ -133,12 +137,21 @@ export class VisaListComponent implements OnInit {
     this.showDs160Modal.set(false);
   }
 
+  // Callback cuando se procesa e importa un pasaporte por OCR
+  onPassportImported(result: OcrPassportResult): void {
+    this.showOcrModal.set(false);
+    this.successMessage.set(
+      `Pasaporte ${result.passportNumber} de ${result.fullName} verificado con éxito (${result.monthsRemaining} meses de vigencia).`
+    );
+    this.openDs160Modal();
+  }
+
   // Callback cuando se crea exitosamente un nuevo tramite DS-160
   onProcessCreated(newProcess: VisaProcess): void {
     this.visaProcesses.update((prev) => [newProcess, ...prev]);
     this.closeDs160Modal();
     this.successMessage.set(
-      `Expediente consular ${newProcess.confirmationCode} registrado con exito.`
+      `Expediente consular ${newProcess.confirmationCode} registrado con éxito.`
     );
     setTimeout(() => this.successMessage.set(null), 5000);
   }
@@ -198,7 +211,7 @@ export class VisaListComponent implements OnInit {
         setTimeout(() => this.successMessage.set(null), 4000);
       },
       error: (err: HttpErrorResponse) => {
-        const msg = err.error?.message || 'Error al actualizar la fase del tramite consular.';
+        const msg = err.error?.message || 'Error al actualizar la fase del trámite consular.';
         this.errorMessage.set(Array.isArray(msg) ? msg.join(', ') : msg);
         setTimeout(() => this.errorMessage.set(null), 6000);
       }

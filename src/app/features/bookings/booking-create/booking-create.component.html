@@ -9,6 +9,32 @@
     </div>
   }
 
+  <!-- Barra de Asistente Inteligente con IA -->
+  <div class="flex items-center justify-between p-3.5 rounded-lg bg-indigo-50/80 border border-indigo-200 shadow-2xs">
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <div>
+        <h4 class="font-bold text-indigo-950 text-xs">Asistente Inteligente de Reservas</h4>
+        <p class="text-[11px] text-indigo-700">Autocompleta código PNR, aerolínea, ruta, tarifa y pasajeros a partir del correo</p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      (click)="showAiModal.set(true)"
+      class="h-8 px-3.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs shrink-0"
+    >
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+      <span>Importar con IA</span>
+    </button>
+  </div>
+
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <!-- SECCION 1: Cliente Titular -->
     <div class="p-4 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-3">
@@ -85,7 +111,7 @@
     <!-- SECCION 2: Datos de Localizador PNR y Mayorista -->
     <div class="p-4 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-4">
       <h3 class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-        2. Codigo PNR y Consolidadora Mayorista
+        2. Código Localizador PNR y Mayorista
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -93,7 +119,7 @@
         <div>
           <div class="flex items-center justify-between mb-1">
             <label for="pnrInput" class="block text-[11px] font-semibold text-slate-700">
-              Codigo Localizador PNR (6 Caracteres) *
+              Código Localizador PNR (6 Caracteres) *
             </label>
             <span class="text-[10px] font-mono text-slate-400">
               {{ form.get('pnr')?.value?.length || 0 }}/6
@@ -112,7 +138,7 @@
           />
           @if (form.get('pnr')?.invalid && form.get('pnr')?.touched) {
             <p class="text-[11px] text-rose-600 font-medium mt-1">
-              El PNR debe tener exactamente 6 caracteres alfanumericos (ej. LAT987).
+              El PNR debe tener exactamente 6 caracteres alfanuméricos (ej. LAT987).
             </p>
           }
         </div>
@@ -120,7 +146,7 @@
         <!-- Selector de Consolidadora Mayorista -->
         <div>
           <label class="block text-[11px] font-semibold text-slate-700 mb-1">
-            Consolidadora / Aerolinea Emisora *
+            Consolidadora / Aerolínea Emisora *
           </label>
           <div class="relative">
             <input
@@ -151,7 +177,7 @@
                           [class.text-sky-800]="w.type === 'WHOLESALER' || w.category === 'CONSOLIDADORA'"
                           [class.bg-purple-100]="w.type === 'AIRLINE' || w.category === 'AEROLINEA'"
                           [class.text-purple-800]="w.type === 'AIRLINE' || w.category === 'AEROLINEA'">
-                      {{ (w.type === 'AIRLINE' || w.category === 'AEROLINEA') ? 'Aerolinea' : 'Consolidadora' }}
+                      {{ (w.type === 'AIRLINE' || w.category === 'AEROLINEA') ? 'Aerolínea' : 'Consolidadora' }}
                     </span>
                   </button>
                 }
@@ -249,7 +275,7 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Aerolinea Operadora</label>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Aerolínea Operadora</label>
           <input
             type="text"
             formControlName="airline"
@@ -258,7 +284,7 @@
           />
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Numero de Vuelo</label>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Número de Vuelo</label>
           <input
             type="text"
             formControlName="flightNumber"
@@ -316,11 +342,11 @@
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] text-slate-500 mb-0.5">Numero Doc *</label>
+                <label class="block text-[10px] text-slate-500 mb-0.5">Número Doc *</label>
                 <input
                   type="text"
                   formControlName="documentNumber"
-                  placeholder="Numero"
+                  placeholder="Número"
                   class="w-full h-7 px-2 rounded border border-slate-300 font-mono text-xs bg-white"
                 />
               </div>
@@ -351,12 +377,12 @@
     <!-- SECCION 5: Observaciones -->
     <div>
       <label class="block text-[11px] font-semibold text-slate-700 mb-1">
-        Observaciones o Notas de Emision
+        Observaciones o Notas de Emisión
       </label>
       <textarea
         formControlName="notes"
         rows="2"
-        placeholder="Equipaje incluido, restricciones tarifarias, codigo de reserva mayorista..."
+        placeholder="Equipaje incluido, restricciones tarifarias, código de reserva mayorista..."
         class="w-full p-2.5 rounded-[4px] border border-slate-300 bg-white text-xs focus:outline-hidden focus:ring-1 focus:ring-[#E11D48] transition"
       ></textarea>
     </div>
@@ -387,9 +413,17 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
-          Registrar Reserva Aerea
+          Registrar Reserva Aérea
         }
       </button>
     </div>
   </form>
 </div>
+
+<!-- Modal del Asistente de Extraccion de Itinerario con IA -->
+@if (showAiModal()) {
+  <app-itinerary-parser-modal
+    (itineraryImported)="onItineraryImported($event)"
+    (closed)="showAiModal.set(false)"
+  />
+}

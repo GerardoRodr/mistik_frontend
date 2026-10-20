@@ -1,0 +1,287 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs animate-fadeIn"
+  (click)="close()"
+>
+  <div
+    class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto text-xs animate-modal"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Encabezado del modal -->
+    <div class="sticky top-0 z-10 px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-200 font-bold">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">Control y Lectura Óptica de Pasaporte (OCR)</h2>
+          <p class="text-[11px] text-slate-500">Reconocimiento biométrico y verificación preventiva de vigencia consular</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        (click)="close()"
+        class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+        title="Cerrar ventana"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenido del modal -->
+    <div class="p-6 space-y-4">
+      @if (errorMessage()) {
+        <div class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-[11px] font-medium flex items-center justify-between">
+          <span>{{ errorMessage() }}</span>
+          <button (click)="errorMessage.set(null)" class="text-rose-600 hover:text-rose-900 font-bold ml-2">✕</button>
+        </div>
+      }
+
+      <!-- Paso 1: Carga de Fotografia del Pasaporte -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <label class="block font-bold text-slate-800 text-xs">
+            1. Fotografía o escaneo de la página biográfica del pasaporte:
+          </label>
+          <button
+            type="button"
+            (click)="loadSampleImage()"
+            class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+          >
+            Cargar imagen de prueba
+          </button>
+        </div>
+
+        <div
+          (drop)="onFileDropped($event)"
+          (dragover)="onDragOver($event)"
+          class="p-6 border-2 border-dashed border-slate-300 rounded-lg text-center bg-slate-50/60 hover:bg-slate-50 transition cursor-pointer relative"
+        >
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="onFileSelected($event)"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+
+          @if (!imageBase64()) {
+            <div class="space-y-2">
+              <svg class="w-10 h-10 mx-auto text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <div class="text-xs text-slate-600 font-medium">
+                Arrastra la imagen aquí o <span class="text-[#E11D48] font-bold">explora tus archivos</span>
+              </div>
+              <p class="text-[10px] text-slate-400">Archivos admitidos: JPG, PNG (máx. 10MB)</p>
+            </div>
+          } @else {
+            <div class="flex items-center justify-center gap-4">
+              <img
+                [src]="imageBase64()"
+                alt="Vista previa del pasaporte"
+                class="max-h-24 rounded border border-slate-300 shadow-2xs object-contain"
+              />
+              <div class="text-left">
+                <span class="text-emerald-700 font-bold text-xs flex items-center gap-1">
+                  <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Fotografía cargada correctamente
+                </span>
+                <p class="text-[11px] text-slate-500 mt-0.5">Haz clic o arrastra otra imagen para reemplazarla</p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Fecha estimada de viaje / cita consular -->
+        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <label class="text-xs text-slate-700 font-semibold shrink-0">
+            Fecha prevista de viaje o cita consular:
+          </label>
+          <input
+            type="date"
+            [ngModel]="travelDate()"
+            (ngModelChange)="travelDate.set($event)"
+            class="h-8 px-2.5 rounded border border-slate-300 bg-white text-xs font-mono focus:ring-1 focus:ring-indigo-500"
+          />
+          <span class="text-[10px] text-slate-400 hidden sm:inline">
+            (Opcional: Permite evaluar la vigencia remanente a la fecha del viaje)
+          </span>
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            type="button"
+            (click)="analyzePassport()"
+            [disabled]="isAnalyzing() || !imageBase64()"
+            class="h-8 px-4 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
+          >
+            @if (isAnalyzing()) {
+              <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span>Leyendo Pasaporte con OCR...</span>
+            } @else {
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Escanear y Evaluar Vigencia</span>
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2: Resultados biométricos y Alerta de Vigencia -->
+      @if (ocrResult(); as res) {
+        <div class="p-4 rounded-lg border space-y-3.5 animate-fadeIn"
+             [class.bg-rose-50/50]="res.isExpiringSoon || res.isExpired"
+             [class.border-rose-300]="res.isExpiringSoon || res.isExpired"
+             [class.bg-emerald-50/40]="!res.isExpiringSoon && !res.isExpired"
+             [class.border-emerald-200]="!res.isExpiringSoon && !res.isExpired">
+
+          <!-- BANNER CRITICO DE VIGENCIA PREVENTIVA (Regla de negocio: Vigencia < 6 meses) -->
+          @if (res.isExpired) {
+            <div class="p-3 rounded-lg bg-rose-600 text-white flex items-start gap-2.5 shadow-xs">
+              <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <h4 class="font-extrabold text-xs uppercase tracking-wide">Documento de Viaje Vencido</h4>
+                <p class="text-[11px] mt-0.5 leading-snug">
+                  {{ res.alertMessage }} No está permitido registrar expedientes consulares con pasaporte caducado.
+                </p>
+              </div>
+            </div>
+          } @else if (res.isExpiringSoon) {
+            <div class="p-3.5 rounded-lg bg-rose-100 border border-rose-300 text-rose-900 flex items-start gap-2.5">
+              <svg class="w-5 h-5 text-rose-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-extrabold text-xs uppercase tracking-wide text-rose-800">
+                    Alerta Preventiva: Vigencia Menor a 6 Meses
+                  </h4>
+                  <span class="text-[10px] font-mono font-bold bg-rose-200 text-rose-900 px-2 py-0.5 rounded">
+                    Remanente: {{ res.monthsRemaining }} meses
+                  </span>
+                </div>
+                <p class="text-[11px] text-rose-800 mt-1 leading-snug font-medium">
+                  {{ res.alertMessage }} Las autoridades consulares y aerolíneas internacionales exigen mínimo 6 meses de vigencia a la fecha del viaje.
+                </p>
+
+                <!-- Confirmacion de advertencia requerida para continuar -->
+                <label class="mt-2.5 flex items-center gap-2 pt-2 border-t border-rose-200 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    [ngModel]="acknowledgedWarning()"
+                    (ngModelChange)="acknowledgedWarning.set($event)"
+                    class="rounded text-[#E11D48] focus:ring-[#E11D48] h-4 w-4"
+                  />
+                  <span class="text-[11px] font-bold text-rose-950">
+                    He notificado al solicitante sobre la vigencia crítica del pasaporte y los riesgos consulares.
+                  </span>
+                </label>
+              </div>
+            </div>
+          } @else {
+            <div class="p-3 rounded-lg bg-emerald-100/70 border border-emerald-300 text-emerald-900 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="font-bold text-xs">Vigencia Conforme</span>
+                <span class="text-[11px] text-emerald-700">({{ res.monthsRemaining }} meses de vigencia)</span>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded">
+                Apto para visado
+              </span>
+            </div>
+          }
+
+          <!-- Cuadricula de Datos Biograficos Extraidos -->
+          <div class="bg-white p-3.5 rounded-lg border border-slate-200 space-y-2.5">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Datos Biográficos Extraídos del Documento
+            </span>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div>
+                <span class="text-[10px] text-slate-500 block">Número de Pasaporte</span>
+                <span class="font-mono font-extrabold text-slate-900 text-xs">{{ res.passportNumber }}</span>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-500 block">Titular del Pasaporte</span>
+                <span class="font-bold text-slate-900 text-xs">{{ res.fullName }}</span>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-500 block">Nacionalidad</span>
+                <span class="font-medium text-slate-800 text-xs">{{ res.nationality }}</span>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-500 block">Fecha de Nacimiento</span>
+                <span class="font-mono text-slate-800 text-xs">{{ res.birthDate }}</span>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-500 block">Fecha de Expiración</span>
+                <span class="font-mono font-bold text-xs" [class.text-rose-600]="res.isExpiringSoon || res.isExpired" [class.text-slate-900]="!res.isExpiringSoon && !res.isExpired">
+                  {{ res.expirationDate }}
+                </span>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-500 block">Meses Restantes</span>
+                <span class="font-mono font-extrabold text-xs" [class.text-rose-600]="res.isExpiringSoon || res.isExpired" [class.text-emerald-700]="!res.isExpiringSoon && !res.isExpired">
+                  {{ res.monthsRemaining }} meses
+                </span>
+              </div>
+            </div>
+
+            @if (res.mrz) {
+              <div class="pt-2 border-t border-slate-100">
+                <span class="text-[9px] text-slate-400 uppercase tracking-wider block">Zona de Lectura Mecánica (MRZ):</span>
+                <div class="font-mono text-[9px] text-slate-600 bg-slate-50 p-1.5 rounded mt-0.5 leading-tight select-all">
+                  {{ res.mrz }}
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Pie del modal -->
+    <div class="px-6 py-3 border-t border-slate-200 flex justify-end gap-2.5 bg-slate-50">
+      <button
+        type="button"
+        (click)="close()"
+        class="h-8 px-4 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold cursor-pointer"
+      >
+        Cancelar
+      </button>
+
+      @if (ocrResult()) {
+        <button
+          type="button"
+          (click)="confirmImport()"
+          [disabled]="ocrResult()!.isExpired || (ocrResult()!.isExpiringSoon && !acknowledgedWarning())"
+          class="h-8 px-5 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold cursor-pointer flex items-center gap-1.5 shadow-2xs disabled:opacity-50"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Importar al Expediente Consular</span>
+        </button>
+      }
+    </div>
+  </div>
+</div>

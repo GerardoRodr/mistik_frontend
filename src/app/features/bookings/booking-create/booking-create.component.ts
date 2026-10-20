@@ -28,11 +28,13 @@ import {
   Wholesaler
 } from '../../../core/models/booking.models';
 import { Customer } from '../../../core/models/customer.models';
+import { ItineraryParserModalComponent } from '../components/itinerary-parser-modal/itinerary-parser-modal.component';
+import { ParsedItinerary } from '../../../core/services/ai.service';
 
 @Component({
   selector: 'app-booking-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ItineraryParserModalComponent],
   templateUrl: './booking-create.component.html'
 })
 export class BookingCreateComponent implements OnInit {
@@ -50,6 +52,7 @@ export class BookingCreateComponent implements OnInit {
   // Senales reactivas de estado
   readonly isSubmitting = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly showAiModal = signal<boolean>(false);
 
   // Senales de clientes y busqueda reactiva
   readonly selectedCustomer = signal<Customer | null>(null);
@@ -238,6 +241,61 @@ export class BookingCreateComponent implements OnInit {
     this.wholesalerFilter.set(wholesaler.name);
   }
 
+  // Integracion con Asistente de IA: Autocompletar formulario a partir de itinerario extraido
+  onItineraryImported(itinerary: ParsedItinerary): void {
+    this.showAiModal.set(false);
+
+    const cleanPnr = (itinerary.pnr || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    const departure = itinerary.departureDate ? itinerary.departureDate.slice(0, 10) : '';
+    const returnDate = itinerary.returnDate ? itinerary.returnDate.slice(0, 10) : '';
+
+    this.form.patchValue({
+      pnr: cleanPnr,
+      airline: itinerary.airline || this.form.get('airline')?.value,
+      origin: itinerary.departureCity ? itinerary.departureCity.slice(0, 3).toUpperCase() : 'TRU',
+      destination: itinerary.arrivalCity ? itinerary.arrivalCity.slice(0, 3).toUpperCase() : 'LIM',
+      departureDate: departure || this.form.get('departureDate')?.value,
+      returnDate: returnDate || this.form.get('returnDate')?.value,
+      totalAmount: itinerary.ticketCost || this.form.get('totalAmount')?.value,
+      currency: (itinerary.currency as Currency) || 'USD'
+    });
+
+    // Cargar pasajeros extraidos si existen
+    if (itinerary.passengers && itinerary.passengers.length > 0) {
+      while (this.passengersArray.length < itinerary.passengers.length) {
+        this.addPassenger();
+      }
+
+      itinerary.passengers.forEach((p, idx) => {
+        const group = this.passengersArray.at(idx) as FormGroup;
+        if (group) {
+          const parts = (p.fullName || '').trim().split(' ');
+          const first = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0] || '';
+          const last = parts.length > 1 ? parts[parts.length - 1] : '';
+
+          group.patchValue({
+            firstName: first,
+            lastName: last,
+            documentNumber: p.documentNumber || group.get('documentNumber')?.value,
+            pnr: cleanPnr
+          });
+        }
+      });
+    }
+
+    // Intentar emparejar mayorista segun la aerolinea extraida
+    if (itinerary.airline) {
+      const matchWholesaler = this.wholesalers().find(
+        (w) =>
+          w.name.toLowerCase().includes(itinerary.airline.toLowerCase()) ||
+          itinerary.airline.toLowerCase().includes(w.name.toLowerCase())
+      );
+      if (matchWholesaler) {
+        this.selectWholesaler(matchWholesaler);
+      }
+    }
+  }
+
   // Empaquetar datos de itinerario en campo notes estructurado
   private formatNotesWithItinerary(formVal: any, wholesalerName?: string): string | undefined {
     const segments: string[] = [];
@@ -317,7 +375,7 @@ export class BookingCreateComponent implements OnInit {
         } else if (typeof msg === 'string') {
           this.errorMessage.set(msg);
         } else {
-          this.errorMessage.set('Error al registrar la reserva aerea en el servidor central.');
+          this.errorMessage.set('Error al registrar la reserva aérea en el servidor central.');
         }
       }
     });
