@@ -1,10 +1,12 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlertsSocketService } from '../../../core/services/alerts-socket.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, DatePipe],
   templateUrl: './header.component.html',
   host: {
     class: 'block shrink-0'
@@ -12,6 +14,10 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class HeaderComponent {
   protected readonly authService = inject(AuthService);
+  protected readonly alertsService = inject(AlertsSocketService);
+
+  // Control del panel desplegable de notificaciones
+  readonly showNotificationsPanel = signal<boolean>(false);
 
   // Iniciales del operador para el avatar
   protected readonly userInitials = computed(() => {
@@ -58,9 +64,24 @@ export class HeaderComponent {
     }
   });
 
+  // Alternar apertura del panel de notificaciones
+  toggleNotifications(): void {
+    this.showNotificationsPanel.update((val) => !val);
+  }
+
+  // Cerrar panel de notificaciones
+  closeNotifications(): void {
+    this.showNotificationsPanel.set(false);
+  }
+
+  // Marcar todas las notificaciones como leidas
+  markAllAsRead(): void {
+    this.alertsService.markAllAsRead();
+  }
+
   // Cerrar sesion de la estacion
   logout(): void {
-    if (confirm('Desea cerrar la sesion de la estacion actual?')) {
+    if (confirm('¿Desea cerrar la sesión de la estación de trabajo actual?')) {
       this.authService.logout();
     }
   }

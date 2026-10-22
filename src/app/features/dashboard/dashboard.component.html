@@ -17,13 +17,13 @@
 
     <!-- Boton de accion rapida -->
     <a
-      routerLink="/crm"
+      routerLink="/kanban"
       class="inline-flex items-center gap-2 h-9 px-4 rounded-[6px] bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-semibold shadow-xs transition cursor-pointer self-start sm:self-auto"
     >
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
       </svg>
-      <span>Gestionar Clientes CRM</span>
+      <span>Abrir Tablero Operativo Kanban</span>
     </a>
   </div>
 
@@ -39,7 +39,7 @@
           1,420
         </div>
         <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          +14.2% mes
+          Activo
         </span>
       </div>
       <div class="text-[11px] text-slate-500 mt-2">
@@ -50,14 +50,14 @@
     <!-- KPI 2: Reservas Activas -->
     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-2xs">
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-        Vuelos & Localizadores
+        Vuelos & Localizadores PNR
       </div>
       <div class="mt-2 flex items-baseline justify-between">
         <div class="text-2xl font-bold text-slate-900 tabular-nums">
           68
         </div>
         <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
-          En emision
+          En emisión
         </span>
       </div>
       <div class="text-[11px] text-slate-500 mt-2">
@@ -68,7 +68,7 @@
     <!-- KPI 3: Citas Consulares -->
     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-2xs">
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-        Tramites Consulares
+        Trámites Consulares
       </div>
       <div class="mt-2 flex items-baseline justify-between">
         <div class="text-2xl font-bold text-slate-900 tabular-nums">
@@ -93,7 +93,7 @@
           12
         </div>
         <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          Al dia
+          Al día
         </span>
       </div>
       <div class="text-[11px] text-slate-500 mt-2">
@@ -103,7 +103,7 @@
   </div>
 
   <!-- Rejilla de modulos de acceso rapido ERP -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Directorio CRM -->
     <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-2xs hover:border-[#E11D48]/40 transition group">
       <div class="flex items-center justify-between mb-3">
@@ -116,9 +116,9 @@
           Disponible
         </span>
       </div>
-      <h2 class="text-sm font-bold text-slate-900">Directorio Maestro de Clientes</h2>
+      <h2 class="text-sm font-bold text-slate-900">Directorio de Clientes</h2>
       <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-        Busqueda en tiempo real por DNI, pasaporte y nombres. Gestion de expedientes 360 y contacto.
+        Búsqueda en tiempo real por DNI, pasaporte y nombres. Gestión de expedientes 360 y contacto.
       </p>
       <div class="mt-4 pt-3 border-t border-slate-100">
         <a
@@ -134,44 +134,89 @@
     </div>
 
     <!-- Modulo Reservas PNR -->
-    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-2xs opacity-75">
+    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-2xs hover:border-[#E11D48]/40 transition group">
       <div class="flex items-center justify-between mb-3">
-        <div class="w-9 h-9 rounded-[6px] bg-slate-100 text-slate-400 flex items-center justify-center">
+        <div class="w-9 h-9 rounded-[6px] bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-[#E11D48] group-hover:text-white transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
           </svg>
         </div>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-[4px] border border-slate-200">
-          En desarrollo
+        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-[4px] border border-emerald-200">
+          Disponible
         </span>
       </div>
-      <h2 class="text-sm font-bold text-slate-800">Emision de Boletos & PNR</h2>
+      <h2 class="text-sm font-bold text-slate-900">Emisión de Boletos & PNR</h2>
       <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-        Validacion de localizadores Sabre/Amadeus, itinerarios aereos y control de consolidadores.
+        Validación de localizadores PNR, catálogo mayorista, pagos con Google Drive y asistente IA.
       </p>
-      <div class="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
-        Integracion con GDS y alertas
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <a
+          routerLink="/reservas"
+          class="text-xs font-bold text-[#E11D48] hover:text-[#BE123C] inline-flex items-center gap-1.5"
+        >
+          <span>Gestionar Reservas</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
       </div>
     </div>
 
     <!-- Modulo Visas -->
-    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-2xs opacity-75">
+    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-2xs hover:border-[#E11D48]/40 transition group">
       <div class="flex items-center justify-between mb-3">
-        <div class="w-9 h-9 rounded-[6px] bg-slate-100 text-slate-400 flex items-center justify-center">
+        <div class="w-9 h-9 rounded-[6px] bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-[#E11D48] group-hover:text-white transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-[4px] border border-slate-200">
-          En desarrollo
+        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-[4px] border border-emerald-200">
+          Disponible
         </span>
       </div>
-      <h2 class="text-sm font-bold text-slate-800">Expedientes Consulares</h2>
+      <h2 class="text-sm font-bold text-slate-900">Trámites Consulares & DS-160</h2>
       <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-        Seguimiento de formularios DS-160, aranceles consulares y agenda multianual de entrevistas.
+        Seguimiento en 4 fases, aranceles MRV, agenda de citas y lectura OCR de pasaportes.
       </p>
-      <div class="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
-        Monitoreo de citas a 18 meses
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <a
+          routerLink="/visas"
+          class="text-xs font-bold text-[#E11D48] hover:text-[#BE123C] inline-flex items-center gap-1.5"
+        >
+          <span>Abrir Trámites</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Modulo Analitica y Finanzas -->
+    <div class="bg-white rounded-lg border border-slate-200 p-5 shadow-2xs hover:border-[#E11D48]/40 transition group">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-9 h-9 rounded-[6px] bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-[#E11D48] group-hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-[4px] border border-emerald-200">
+          Disponible
+        </span>
+      </div>
+      <h2 class="text-sm font-bold text-slate-900">Analítica & Finanzas BI</h2>
+      <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+        Indicadores de recaudación, embudo de conversión y supervisión de cuellos de botella.
+      </p>
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <a
+          routerLink="/analytics"
+          class="text-xs font-bold text-[#E11D48] hover:text-[#BE123C] inline-flex items-center gap-1.5"
+        >
+          <span>Ver Métricas BI</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
       </div>
     </div>
   </div>

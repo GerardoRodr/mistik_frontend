@@ -1,0 +1,54 @@
+<!-- Contenedor flotante de notificaciones en tiempo real en la esquina superior derecha -->
+<div class="fixed top-16 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none select-none">
+  @for (toast of alertsService.activeToasts(); track toast.id) {
+    <div
+      class="pointer-events-auto p-3.5 rounded-lg border shadow-lg transition-all duration-300 ease-out flex items-start gap-3 bg-white"
+      [ngClass]="getToastClasses(toast).border"
+      role="alert"
+    >
+      <!-- Icono semantico por categoria -->
+      <div class="w-8 h-8 rounded-md flex items-center justify-center shrink-0 text-sm font-bold" [ngClass]="getToastClasses(toast).iconBg">
+        @if (toast.type === 'CHECKIN_DUE') {
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        } @else if (toast.type === 'VISA_APPOINTMENT') {
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        } @else {
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        }
+      </div>
+
+      <!-- Contenido de la alerta -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-1">
+          <h4 class="text-xs font-bold text-slate-900 truncate">
+            {{ toast.title }}
+          </h4>
+          <span class="text-[10px] text-slate-400 font-mono shrink-0">
+            {{ toast.timestamp | date:'shortTime' }}
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-600 mt-0.5 leading-snug">
+          {{ toast.message }}
+        </p>
+      </div>
+
+      <!-- Boton de cierre manual -->
+      <button
+        type="button"
+        (click)="dismiss(toast.id)"
+        class="text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-100 transition cursor-pointer shrink-0"
+        title="Cerrar notificación"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  }
+</div>
