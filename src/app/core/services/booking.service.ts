@@ -5,9 +5,12 @@ import { environment } from '../../../environments/environment';
 import {
   AllowedTransitionsResponse,
   Booking,
+  BookingBalance,
   BookingQueryParams,
   CreateBookingDto,
+  CreatePaymentDto,
   PaginatedBookingsResponse,
+  RegisterPaymentResponse,
   TransitionBookingDto,
   TransitionBookingResponse,
   Wholesaler
@@ -152,5 +155,15 @@ export class BookingService {
   // Ejecutar cambio de estado a traves de la maquina de estados de vuelos
   transitionBooking(id: string, dto: TransitionBookingDto): Observable<TransitionBookingResponse> {
     return this.http.post<TransitionBookingResponse>(`${this.baseUrl}/${id}/transition`, dto);
+  }
+
+  // Registrar comprobante de pago con enlace a Google Drive (POST /api/v1/bookings/:id/payments)
+  registerPayment(bookingId: string, dto: CreatePaymentDto): Observable<RegisterPaymentResponse> {
+    return this.http.post<RegisterPaymentResponse>(`${this.baseUrl}/${bookingId}/payments`, dto);
+  }
+
+  // Consultar balance financiero y saldo deudor de la reserva (GET /api/v1/bookings/:id/balance)
+  getBookingBalance(bookingId: string): Observable<BookingBalance> {
+    return this.http.get<BookingBalance>(`${this.baseUrl}/${bookingId}/balance`);
   }
 }

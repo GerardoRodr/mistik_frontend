@@ -28,7 +28,7 @@ export class SidebarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly isCollapsed = signal(false);
 
-  // Grupos y modulos del ERP de turismo
+  // Grupos y modulos del ERP de turismo con todos los modulos activos
   protected readonly navGroups: NavGroup[] = [
     {
       name: 'Operaciones',
@@ -39,14 +39,14 @@ export class SidebarComponent {
           icon: 'dashboard'
         },
         {
-          label: 'Directorio Clientes',
+          label: 'Directorio de Clientes',
           path: '/crm',
           icon: 'users'
         }
       ]
     },
     {
-      name: 'Gestion Turistica',
+      name: 'Gestión Turística',
       items: [
         {
           label: 'Reservas & Vuelos',
@@ -54,28 +54,24 @@ export class SidebarComponent {
           icon: 'plane'
         },
         {
-          label: 'Tramites de Visas',
+          label: 'Trámites de Visas',
           path: '/visas',
           icon: 'passport'
         },
         {
           label: 'Flujo Operativo Kanban',
           path: '/kanban',
-          icon: 'kanban',
-          badge: 'Proximo',
-          disabled: true
+          icon: 'kanban'
         }
       ]
     },
     {
-      name: 'Finanzas',
+      name: 'Finanzas & Analítica',
       items: [
         {
-          label: 'Facturacion & Cobros',
-          path: '/facturacion',
-          icon: 'receipt',
-          badge: 'Proximo',
-          disabled: true
+          label: 'Analítica & Finanzas',
+          path: '/analytics',
+          icon: 'chart'
         }
       ]
     }

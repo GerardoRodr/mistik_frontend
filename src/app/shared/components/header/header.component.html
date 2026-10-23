@@ -4,7 +4,7 @@
     <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
       <span class="text-slate-900 font-semibold">Mistik Tours & Travel</span>
       <span class="text-slate-300">/</span>
-      <span class="text-slate-600">Gestion Operativa</span>
+      <span class="text-slate-600">Gestión Operativa</span>
     </div>
 
     <!-- Indicador de sede corporativa -->
@@ -13,8 +13,102 @@
     </span>
   </div>
 
-  <!-- Area de usuario y estacion de trabajo -->
-  <div class="flex items-center gap-4">
+  <!-- Area de usuario, notificaciones y estacion de trabajo -->
+  <div class="flex items-center gap-3">
+    <!-- Boton de campana del Centro de Alertas en Tiempo Real -->
+    <div class="relative">
+      <button
+        type="button"
+        (click)="toggleNotifications()"
+        class="relative h-8 w-8 rounded-[6px] border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
+        title="Centro de Notificaciones en Tiempo Real"
+        aria-label="Notificaciones"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+
+        @if (alertsService.unreadCount() > 0) {
+          <span class="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-[#E11D48] text-white font-bold text-[9px] flex items-center justify-center shadow-xs animate-pulse">
+            {{ alertsService.unreadCount() }}
+          </span>
+        }
+      </button>
+
+      <!-- Panel desplegable de notificaciones -->
+      @if (showNotificationsPanel()) {
+        <div
+          class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg border border-slate-200 shadow-xl z-50 overflow-hidden text-xs"
+        >
+          <!-- Encabezado del panel -->
+          <div class="p-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900">Centro de Notificaciones</span>
+              @if (alertsService.unreadCount() > 0) {
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-100 text-[#E11D48]">
+                  {{ alertsService.unreadCount() }} pendientes
+                </span>
+              }
+            </div>
+
+            @if (alertsService.alerts().length > 0) {
+              <button
+                type="button"
+                (click)="markAllAsRead()"
+                class="text-[11px] font-semibold text-[#E11D48] hover:text-[#BE123C] cursor-pointer"
+              >
+                Marcar todas leídas
+              </button>
+            }
+          </div>
+
+          <!-- Listado scrolleable de notificaciones -->
+          <div class="max-h-72 overflow-y-auto divide-y divide-slate-100">
+            @if (alertsService.alerts().length === 0) {
+              <div class="p-6 text-center text-slate-400">
+                <svg class="w-8 h-8 mx-auto text-slate-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <p class="font-medium text-[11px]">No hay notificaciones registradas</p>
+              </div>
+            } @else {
+              @for (alert of alertsService.alerts(); track alert.id) {
+                <div
+                  (click)="alertsService.markAsRead(alert.id)"
+                  class="p-3 hover:bg-slate-50 transition cursor-pointer flex items-start gap-2.5"
+                  [class.bg-rose-50/20]="!alert.read"
+                >
+                  <div class="w-2 h-2 rounded-full mt-1.5 shrink-0" [class.bg-[#E11D48]]="!alert.read" [class.bg-transparent]="alert.read"></div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-slate-900 truncate text-[11px]">{{ alert.title }}</span>
+                      <span class="text-[10px] text-slate-400 font-mono shrink-0 ml-1">
+                        {{ alert.timestamp | date:'shortTime' }}
+                      </span>
+                    </div>
+                    <p class="text-slate-600 text-[11px] mt-0.5 leading-snug">
+                      {{ alert.message }}
+                    </p>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Pie del panel -->
+          <div class="p-2 border-t border-slate-100 bg-slate-50 text-center">
+            <button
+              type="button"
+              (click)="closeNotifications()"
+              class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+            >
+              Cerrar panel
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
     @if (authService.currentUser(); as user) {
       <div class="flex items-center gap-3">
         <!-- Chip del operador -->
@@ -35,11 +129,11 @@
           </div>
         </div>
 
-        <!-- Boton de cierre de estacion (estilo secundario neutral ERP) -->
+        <!-- Boton de cierre de estacion -->
         <button
           (click)="logout()"
-          class="h-8 px-2.5 rounded-[6px] border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-[#DC2626] hover:border-rose-200 transition text-xs font-semibold flex items-center gap-1.5"
-          title="Cerrar estacion de trabajo"
+          class="h-8 px-2.5 rounded-[6px] border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-[#DC2626] hover:border-rose-200 transition text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+          title="Cerrar sesión de la estación de trabajo"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

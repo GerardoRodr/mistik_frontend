@@ -54,6 +54,31 @@ export const routes: Routes = [
           import('./features/visas/visas.routes').then((m) => m.visasRoutes)
       },
       {
+        path: 'kanban',
+        title: 'Flujo Operativo Kanban | Mistik Tours ERP',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'SUPERVISOR', 'AGENT', 'ASESOR'] },
+        loadComponent: () =>
+          import('./features/kanban/components/kanban-board/kanban-board.component').then(
+            (m) => m.KanbanBoardComponent
+          )
+      },
+      {
+        path: 'analytics',
+        title: 'Panel de Analítica y Finanzas | Mistik Tours ERP',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'SUPERVISOR', 'AGENT', 'ASESOR'] },
+        loadComponent: () =>
+          import('./features/analytics/components/analytics-dashboard/analytics-dashboard.component').then(
+            (m) => m.AnalyticsDashboardComponent
+          )
+      },
+      {
+        path: 'facturacion',
+        redirectTo: 'analytics',
+        pathMatch: 'full'
+      },
+      {
         path: 'unauthorized',
         title: 'Acceso Denegado | Mistik Tours ERP',
         loadComponent: () =>

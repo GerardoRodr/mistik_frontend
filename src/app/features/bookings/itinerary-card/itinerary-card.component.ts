@@ -16,11 +16,12 @@ import {
   BookingStatus,
   TransitionBookingDto
 } from '../../../core/models/booking.models';
+import { BalanceSummaryComponent } from '../components/balance-summary/balance-summary.component';
 
 @Component({
   selector: 'app-itinerary-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, BalanceSummaryComponent],
   templateUrl: './itinerary-card.component.html'
 })
 export class ItineraryCardComponent implements OnInit {
@@ -36,6 +37,7 @@ export class ItineraryCardComponent implements OnInit {
   readonly isTransitioning = signal<boolean>(false);
   readonly allowedTransitions = signal<BookingStatus[]>([]);
   readonly showTransitionModal = signal<boolean>(false);
+  readonly showBalanceModal = signal<boolean>(false);
   readonly selectedTargetStatus = signal<BookingStatus | null>(null);
   readonly cancellationReason = signal<string>('');
   readonly ticketNumber = signal<string>('');
@@ -123,6 +125,12 @@ export class ItineraryCardComponent implements OnInit {
     }
   }
 
+  // Abrir modal de balance financiero
+  openBalanceModal(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showBalanceModal.set(true);
+  }
+
   // Abrir modal de transicion consultando estados destino validos
   openTransitionModal(target?: BookingStatus): void {
     this.transitionError.set(null);
@@ -166,7 +174,7 @@ export class ItineraryCardComponent implements OnInit {
     if (!target) return;
 
     if (target === 'CANCELLED' && this.cancellationReason().trim().length < 5) {
-      this.transitionError.set('El motivo de cancelacion debe tener al menos 5 caracteres.');
+      this.transitionError.set('El motivo de cancelación debe tener al menos 5 caracteres.');
       return;
     }
 
@@ -199,7 +207,7 @@ export class ItineraryCardComponent implements OnInit {
         } else if (typeof msg === 'string') {
           this.transitionError.set(msg);
         } else {
-          this.transitionError.set('Error al ejecutar la transicion de estado en el flujo operativo.');
+          this.transitionError.set('Error al ejecutar la transición de estado en el flujo operativo.');
         }
       }
     });

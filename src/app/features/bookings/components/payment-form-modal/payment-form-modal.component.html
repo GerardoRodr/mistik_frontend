@@ -1,0 +1,171 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs animate-fadeIn"
+  (click)="close()"
+>
+  <div
+    class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden text-xs animate-modal"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Encabezado del modal -->
+    <div class="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+      <div>
+        <h3 class="font-bold text-slate-900">Registrar Abono de Pago</h3>
+        <p class="text-[11px] text-slate-500 font-mono">
+          Expediente: {{ bookingCode() || 'Reserva' }}
+          @if (balanceDue() > 0) {
+            | Saldo Pendiente: {{ currency() }} {{ balanceDue() | number:'1.2-2' }}
+          }
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="close()"
+        class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+        title="Cerrar ventana"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Formulario reactivo -->
+    <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()" class="p-5 space-y-3.5">
+      @if (errorMessage()) {
+        <div class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-[11px] font-medium flex items-center justify-between">
+          <span>{{ errorMessage() }}</span>
+          <button (click)="errorMessage.set(null)" class="text-rose-600 hover:text-rose-900 font-bold ml-2">✕</button>
+        </div>
+      }
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Importe del abono -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Monto del Abono *</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0.01"
+            formControlName="amount"
+            placeholder="0.00"
+            class="w-full h-8 px-3 rounded border font-mono font-bold text-slate-900 text-xs focus:ring-1 focus:ring-[#E11D48] transition"
+            [class.border-rose-400]="paymentForm.get('amount')?.invalid && paymentForm.get('amount')?.touched"
+            [class.border-slate-300]="!(paymentForm.get('amount')?.invalid && paymentForm.get('amount')?.touched)"
+          />
+          @if (paymentForm.get('amount')?.invalid && paymentForm.get('amount')?.touched) {
+            <p class="text-[10px] text-rose-600 mt-0.5">Ingrese un monto válido mayor a 0.</p>
+          }
+        </div>
+
+        <!-- Moneda -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Moneda *</label>
+          <select
+            formControlName="currency"
+            class="w-full h-8 px-2.5 rounded border border-slate-300 bg-white text-xs font-semibold focus:ring-1 focus:ring-[#E11D48]"
+          >
+            <option value="USD">USD (Dólares Americanos)</option>
+            <option value="PEN">PEN (Soles Peruanos)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Método de Pago -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Método de Pago *</label>
+          <select
+            formControlName="paymentMethod"
+            class="w-full h-8 px-2.5 rounded border border-slate-300 bg-white text-xs focus:ring-1 focus:ring-[#E11D48]"
+          >
+            <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+            <option value="DEPOSITO">Depósito en Ventanilla / Agente</option>
+            <option value="TARJETA">Tarjeta de Crédito / Débito</option>
+            <option value="YAPE_PLIN">Billetera Digital (Yape / Plin)</option>
+            <option value="EFECTIVO">Efectivo en Oficina</option>
+          </select>
+        </div>
+
+        <!-- Banco Emisor / Receptor -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Banco / Entidad Financiera *</label>
+          <select
+            formControlName="bankName"
+            class="w-full h-8 px-2.5 rounded border border-slate-300 bg-white text-xs focus:ring-1 focus:ring-[#E11D48]"
+          >
+            <option value="BCP">Banco de Crédito del Perú (BCP)</option>
+            <option value="BBVA">BBVA Perú</option>
+            <option value="Interbank">Interbank</option>
+            <option value="Scotiabank">Scotiabank</option>
+            <option value="Banco de la Nacion">Banco de la Nación</option>
+            <option value="Caja Trujillo">Caja Trujillo</option>
+            <option value="Otro">Otro banco o entidad</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Número de Operación -->
+      <div>
+        <label class="block font-semibold text-slate-700 mb-1">Número de Operación o Transacción *</label>
+        <input
+          type="text"
+          formControlName="operationNumber"
+          placeholder="Ej: OP-987452 o 00458921"
+          class="w-full h-8 px-3 rounded border border-slate-300 font-mono text-xs uppercase focus:ring-1 focus:ring-[#E11D48] transition"
+          [class.border-rose-400]="paymentForm.get('operationNumber')?.invalid && paymentForm.get('operationNumber')?.touched"
+        />
+        @if (paymentForm.get('operationNumber')?.invalid && paymentForm.get('operationNumber')?.touched) {
+          <p class="text-[10px] text-rose-600 mt-0.5">El número de operación es obligatorio (mínimo 4 caracteres).</p>
+        }
+      </div>
+
+      <!-- Enlace al Comprobante en Google Drive con validación estricta -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block font-semibold text-slate-700">
+            Enlace al Comprobante en Google Drive *
+          </label>
+          <span class="text-[10px] text-slate-400 font-mono">https://drive.google.com/...</span>
+        </div>
+        <input
+          type="url"
+          formControlName="driveReceiptUrl"
+          placeholder="https://drive.google.com/file/d/1A2B3C4D5E6F.../view"
+          class="w-full h-8 px-3 rounded border font-mono text-xs focus:ring-1 focus:ring-[#E11D48] transition"
+          [class.border-rose-400]="paymentForm.get('driveReceiptUrl')?.invalid && paymentForm.get('driveReceiptUrl')?.touched"
+          [class.border-slate-300]="!(paymentForm.get('driveReceiptUrl')?.invalid && paymentForm.get('driveReceiptUrl')?.touched)"
+        />
+        @if (paymentForm.get('driveReceiptUrl')?.invalid && paymentForm.get('driveReceiptUrl')?.touched) {
+          <p class="text-[10px] text-rose-600 mt-1 font-medium">
+            Por política de auditoría, el comprobante debe ser un enlace válido alojado en Google Drive (https://drive.google.com/...).
+          </p>
+        } @else {
+          <p class="text-[10px] text-slate-400 mt-1">
+            Los recibos y vouchers deben cargarse previamente a la carpeta corporativa de Google Drive.
+          </p>
+        }
+      </div>
+
+      <!-- Pie del modal -->
+      <div class="pt-3 border-t border-slate-200 flex justify-end gap-2 bg-slate-50 -mx-5 -mb-5 px-5 py-3">
+        <button
+          type="button"
+          (click)="close()"
+          class="h-8 px-3 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold cursor-pointer"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSubmitting() || paymentForm.invalid"
+          class="h-8 px-4 rounded bg-[#E11D48] hover:bg-[#BE123C] text-white font-semibold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+        >
+          @if (isSubmitting()) {
+            <span class="animate-spin text-xs">...</span>
+          }
+          Registrar Abono
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
